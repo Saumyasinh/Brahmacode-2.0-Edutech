@@ -15,16 +15,18 @@
                 <h1 class="login-title">PARENT LOGIN</h1>
             </div>
 
+            <!-- Error Message -->
+            <div id="errorMsg" class="error-message" style="display: none;"></div>
+
             <!-- Login Form -->
-            <form class="login-form" onsubmit="handleLogin(event)">
+            <form class="login-form" onsubmit="loginParent(event)">
                 <div class="form-group">
                     <label for="studentId" class="form-label">Student ID:</label>
                     <input 
                         type="text" 
                         id="studentId" 
-                        name="studentId" 
                         class="form-input" 
-                        placeholder="Enter student's ID"
+                        placeholder="Enter your child's Student ID"
                         required
                     >
                 </div>
@@ -34,7 +36,6 @@
                     <input 
                         type="password" 
                         id="password" 
-                        name="password" 
                         class="form-input" 
                         placeholder="Enter your password"
                         required
@@ -44,22 +45,51 @@
                 <button type="submit" class="login-button">Login</button>
             </form>
 
-            <!-- Sign Up Link -->
-            <p class="signup-prompt">
-                Don't have an account? <a href="parent-signup.html" class="signup-link">Sign up</a>
+            <!-- Note for demo: Show demo credentials -->
+            <p class="signup-prompt" style="font-size: 12px; color: #666;">
+                Use your child's Student ID and password to login
             </p>
         </div>
     </div>
 
     <script>
-        function handleLogin(event) {
+        function showError(message) {
+            const errorMsg = document.getElementById('errorMsg');
+            errorMsg.textContent = message;
+            errorMsg.style.display = 'block';
+        }
+
+        function clearError() {
+            const errorMsg = document.getElementById('errorMsg');
+            errorMsg.style.display = 'none';
+        }
+
+        function loginParent(event) {
             event.preventDefault();
-            const studentId = document.getElementById('studentId').value;
-            const password = document.getElementById('password').value;
-            
-            if (studentId && password) {
-                alert(`Welcome ${studentId}! (Demo - No backend)`);
-                // In a real app, send credentials to backend
+            clearError();
+
+            const studentId = document.getElementById('studentId').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            if (!studentId || !password) {
+                showError('Please fill in all fields');
+                return;
+            }
+
+            // Validate against student accounts
+            const studentAccounts = JSON.parse(localStorage.getItem('studentAccounts') || '[]');
+            const account = studentAccounts.find(acc => acc.studentId === studentId && acc.password === password);
+
+            if (account) {
+                // Store current user session as parent viewing student
+                localStorage.setItem('currentUser', JSON.stringify({ 
+                    role: 'parent', 
+                    studentId: studentId, 
+                    studentName: account.fullName 
+                }));
+                window.location.href = 'dashboard.html';
+            } else {
+                showError('Invalid Student ID or password. Check if this student account exists.');
             }
         }
     </script>

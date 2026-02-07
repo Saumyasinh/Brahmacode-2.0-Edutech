@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Login - PrepSense AI</title>
+    <title>Student Login/Signup - PrepSense AI</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -12,17 +12,19 @@
             <!-- Back Button and Title -->
             <div class="login-header">
                 <a href="index.html" class="back-button" title="Go back">←</a>
-                <h1 class="login-title">STUDENT LOGIN</h1>
+                <h1 class="login-title" id="pageTitle">STUDENT LOGIN</h1>
             </div>
 
-            <!-- Login Form -->
-            <form class="login-form" onsubmit="handleLogin(event)">
+            <!-- Error Message -->
+            <div id="errorMsg" class="error-message" style="display: none;"></div>
+
+            <!-- LOGIN FORM -->
+            <form class="login-form" id="loginForm" onsubmit="loginStudent(event)" style="display: block;">
                 <div class="form-group">
-                    <label for="studentId" class="form-label">Student ID:</label>
+                    <label for="loginStudentId" class="form-label">Student ID:</label>
                     <input 
                         type="text" 
-                        id="studentId" 
-                        name="studentId" 
+                        id="loginStudentId" 
                         class="form-input" 
                         placeholder="Enter your Student ID"
                         required
@@ -30,11 +32,10 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="password" class="form-label">Password:</label>
+                    <label for="loginPassword" class="form-label">Password:</label>
                     <input 
                         type="password" 
-                        id="password" 
-                        name="password" 
+                        id="loginPassword" 
                         class="form-input" 
                         placeholder="Enter your password"
                         required
@@ -44,23 +45,160 @@
                 <button type="submit" class="login-button">Login</button>
             </form>
 
-            <!-- Sign Up Link -->
-            <p class="signup-prompt">
-                If you are new, <a href="#signup" class="signup-link">Sign up</a>
+            <!-- SIGNUP FORM -->
+            <form class="login-form" id="signupForm" onsubmit="signupStudent(event)" style="display: none;">
+                <div class="form-group">
+                    <label for="signupFullName" class="form-label">Full Name:</label>
+                    <input 
+                        type="text" 
+                        id="signupFullName" 
+                        class="form-input" 
+                        placeholder="Enter your full name"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="signupStudentId" class="form-label">Student ID:</label>
+                    <input 
+                        type="text" 
+                        id="signupStudentId" 
+                        class="form-input" 
+                        placeholder="Enter your Student ID"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="signupPassword" class="form-label">Password:</label>
+                    <input 
+                        type="password" 
+                        id="signupPassword" 
+                        class="form-input" 
+                        placeholder="Minimum 6 characters"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="signupConfirmPassword" class="form-label">Confirm Password:</label>
+                    <input 
+                        type="password" 
+                        id="signupConfirmPassword" 
+                        class="form-input" 
+                        placeholder="Re-enter password"
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="login-button">Create Account</button>
+            </form>
+
+            <!-- Toggle between Login and Signup -->
+            <p class="signup-prompt" id="toggleText">
+                If you are new, <a href="javascript:toggleForm()" class="signup-link">Sign up</a>
             </p>
         </div>
     </div>
 
     <script>
-        function handleLogin(event) {
-            event.preventDefault();
-            const studentId = document.getElementById('studentId').value;
-            const password = document.getElementById('password').value;
-            
-            if (studentId && password) {
-                alert(`Welcome ${studentId}! (Demo - No backend)`);
-                // In a real app, send credentials to backend
+        function toggleForm() {
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            const pageTitle = document.getElementById('pageTitle');
+            const toggleText = document.getElementById('toggleText');
+            const errorMsg = document.getElementById('errorMsg');
+
+            errorMsg.style.display = 'none';
+
+            if (loginForm.style.display === 'block') {
+                loginForm.style.display = 'none';
+                signupForm.style.display = 'block';
+                pageTitle.textContent = 'STUDENT SIGN UP';
+                toggleText.innerHTML = 'Already have an account? <a href="javascript:toggleForm()" class="signup-link">Login</a>';
+            } else {
+                loginForm.style.display = 'block';
+                signupForm.style.display = 'none';
+                pageTitle.textContent = 'STUDENT LOGIN';
+                toggleText.innerHTML = 'If you are new, <a href="javascript:toggleForm()" class="signup-link">Sign up</a>';
             }
+        }
+
+        function showError(message) {
+            const errorMsg = document.getElementById('errorMsg');
+            errorMsg.textContent = message;
+            errorMsg.style.display = 'block';
+        }
+
+        function clearError() {
+            const errorMsg = document.getElementById('errorMsg');
+            errorMsg.style.display = 'none';
+        }
+
+        function loginStudent(event) {
+            event.preventDefault();
+            clearError();
+
+            const studentId = document.getElementById('loginStudentId').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            if (!studentId || !password) {
+                showError('Please fill in all fields');
+                return;
+            }
+
+            // Get student accounts from localStorage
+            const studentAccounts = JSON.parse(localStorage.getItem('studentAccounts') || '[]');
+            const account = studentAccounts.find(acc => acc.studentId === studentId && acc.password === password);
+
+            if (account) {
+                // Store current user session with full name
+                localStorage.setItem('currentUser', JSON.stringify({ role: 'student', studentId: studentId, fullName: account.fullName }));
+                window.location.href = 'dashboard.html';
+            } else {
+                showError('Invalid Student ID or password');
+            }
+        }
+
+        function signupStudent(event) {
+            event.preventDefault();
+            clearError();
+
+            const fullName = document.getElementById('signupFullName').value.trim();
+            const studentId = document.getElementById('signupStudentId').value.trim();
+            const password = document.getElementById('signupPassword').value.trim();
+            const confirmPassword = document.getElementById('signupConfirmPassword').value.trim();
+
+            // Validation
+            if (!fullName || !studentId || !password || !confirmPassword) {
+                showError('Please fill in all fields');
+                return;
+            }
+
+            if (password.length < 6) {
+                showError('Password must be at least 6 characters');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showError('Passwords do not match');
+                return;
+            }
+
+            // Check if student ID already exists
+            const studentAccounts = JSON.parse(localStorage.getItem('studentAccounts') || '[]');
+            if (studentAccounts.find(acc => acc.studentId === studentId)) {
+                showError('This Student ID is already registered');
+                return;
+            }
+
+            // Save new student account
+            studentAccounts.push({ fullName: fullName, studentId: studentId, password: password });
+            localStorage.setItem('studentAccounts', JSON.stringify(studentAccounts));
+
+            // Auto-login after signup
+            localStorage.setItem('currentUser', JSON.stringify({ role: 'student', studentId: studentId, fullName: fullName }));
+            window.location.href = 'dashboard.html';
         }
     </script>
 </body>

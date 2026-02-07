@@ -15,14 +15,16 @@
                 <h1 class="login-title">TEACHER LOGIN</h1>
             </div>
 
+            <!-- Error Message -->
+            <div id="errorMsg" class="error-message" style="display: none;"></div>
+
             <!-- Login Form -->
-            <form class="login-form" onsubmit="handleLogin(event)">
+            <form class="login-form" onsubmit="loginTeacher(event)">
                 <div class="form-group">
                     <label for="teacherId" class="form-label">Teacher ID:</label>
                     <input 
                         type="text" 
                         id="teacherId" 
-                        name="teacherId" 
                         class="form-input" 
                         placeholder="Enter your Teacher ID"
                         required
@@ -34,7 +36,6 @@
                     <input 
                         type="password" 
                         id="password" 
-                        name="password" 
                         class="form-input" 
                         placeholder="Enter your password"
                         required
@@ -44,22 +45,53 @@
                 <button type="submit" class="login-button">Login</button>
             </form>
 
-            <!-- Sign Up Link -->
-            <p class="signup-prompt">
-                If you are new, <a href="#signup" class="signup-link">Sign up</a>
+            <!-- Note for demo: Show demo credentials -->
+            <p class="signup-prompt" style="font-size: 12px; color: #666;">
+                Demo credentials: T001 / password123
             </p>
         </div>
     </div>
 
     <script>
-        function handleLogin(event) {
+        // Predefined teacher accounts
+        const TEACHER_ACCOUNTS = [
+            { teacherId: 'T001', password: 'password123' },
+            { teacherId: 'T002', password: 'teacher456' },
+            { teacherId: 'T003', password: 'secure789' }
+        ];
+
+        function showError(message) {
+            const errorMsg = document.getElementById('errorMsg');
+            errorMsg.textContent = message;
+            errorMsg.style.display = 'block';
+        }
+
+        function clearError() {
+            const errorMsg = document.getElementById('errorMsg');
+            errorMsg.style.display = 'none';
+        }
+
+        function loginTeacher(event) {
             event.preventDefault();
-            const teacherId = document.getElementById('teacherId').value;
-            const password = document.getElementById('password').value;
-            
-            if (teacherId && password) {
-                alert(`Welcome ${teacherId}! (Demo - No backend)`);
-                // In a real app, send credentials to backend
+            clearError();
+
+            const teacherId = document.getElementById('teacherId').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            if (!teacherId || !password) {
+                showError('Please fill in all fields');
+                return;
+            }
+
+            // Validate against predefined teacher accounts
+            const account = TEACHER_ACCOUNTS.find(acc => acc.teacherId === teacherId && acc.password === password);
+
+            if (account) {
+                // Store current user session
+                localStorage.setItem('currentUser', JSON.stringify({ role: 'teacher', teacherId: teacherId }));
+                window.location.href = 'dashboard.html';
+            } else {
+                showError('Invalid Teacher ID or password');
             }
         }
     </script>
