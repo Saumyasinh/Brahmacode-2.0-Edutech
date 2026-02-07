@@ -29,6 +29,34 @@
             --transition: all 0.3s ease;
         }
 
+        /* PAGE TRANSITION ANIMATION */
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .page-transition-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--background-cream);
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        .page-transition-overlay.fade-out {
+            animation: fadeOut 0.6s ease-out forwards;
+        }
+
+        .page-transition-overlay.fade-in {
+            animation: fadeIn 0.4s ease-in forwards;
+            pointer-events: auto;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--background-cream);
@@ -458,6 +486,66 @@
             font-size: 13px;
             color: #7a8290;
             margin-top: 15px;
+        }
+
+        /* AI INSIGHT CARD */
+        .ai-insight-card {
+            background: linear-gradient(135deg, #122C4F 0%, #1a3a5f 100%);
+            color: white;
+            padding: 28px 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            grid-column: 1 / -1;
+            margin-top: 10px;
+        }
+
+        .ai-insight-icon {
+            font-size: 40px;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+
+        .ai-insight-content {
+            flex: 1;
+        }
+
+        .ai-insight-title {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #F0D637;
+            margin-bottom: 12px;
+        }
+
+        .ai-insight-text {
+            font-size: 15px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.95);
+            margin-bottom: 16px;
+        }
+
+        .ai-insight-action {
+            display: inline-block;
+            background: #F0D637;
+            color: #122C4F;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .ai-insight-action:hover {
+            background: #f5e34a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(240, 214, 55, 0.3);
         }
 
         /* STATISTICS CARDS */
@@ -1084,6 +1172,20 @@
         .spinner { width: 60px; height: 60px; border: 5px solid rgba(255, 255, 255, 0.2); border-top: 5px solid #F0D637; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .loading-text { position: absolute; bottom: 50px; color: white; font-size: 14px; font-weight: 600; text-align: center; }
+
+        /* RESPONSIVE AI INSIGHT CARD */
+        @media (max-width: 768px) {
+            .ai-insight-card {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 15px;
+            }
+
+            .ai-insight-text {
+                font-size: 14px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1124,19 +1226,19 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="weak-topics.html">
+                    <a class="nav-link" href="#" onclick="handleNavigation('weak-topics.html')">
                         <span class="nav-icon">⚠️</span>
                         <span>Weak Topics</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="study-plan.html">
+                    <a class="nav-link" href="#" onclick="handleNavigation('study-plan.html')">
                         <span class="nav-icon">📚</span>
                         <span>Study Plan & History</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="student-profile.html">
+                    <a class="nav-link" href="#" onclick="handleNavigation('student-profile.html')">
                         <span class="nav-icon">👤</span>
                         <span>Profile</span>
                     </a>
@@ -1257,6 +1359,16 @@
                         </div>
                     </div>
 
+                    <!-- AI INSIGHT CARD (FULL WIDTH) -->
+                    <div class="ai-insight-card" id="aiInsightCard">
+                        <div class="ai-insight-icon">💡</div>
+                        <div class="ai-insight-content">
+                            <div class="ai-insight-title">AI Insight</div>
+                            <div class="ai-insight-text" id="aiInsightText">Begin your learning journey by taking your first quiz to unlock personalized insights.</div>
+                            <button class="ai-insight-action" onclick="selectSubject('Physics')">Start Quiz</button>
+                        </div>
+                    </div>
+
                     <!-- RECENT ATTEMPTS TABLE (FULL WIDTH) -->
                     <div class="recent-attempts">
                         <h2>Recent Attempts</h2>
@@ -1341,6 +1453,13 @@
            - Seeds demo attempts if none exist for the student
            ============================================ */
 
+        // PAGE TRANSITION HANDLER
+        document.addEventListener('DOMContentLoaded', function() {
+            const transitionOverlay = document.getElementById('pageTransition');
+            if (transitionOverlay) {
+                transitionOverlay.classList.add('fade-out');
+            }
+
         // Access control on load
         document.addEventListener('DOMContentLoaded', function() {
             const storedRole = (localStorage.getItem('role') || '').toLowerCase();
@@ -1417,6 +1536,53 @@
             return progress;
         }
 
+        function generateAIInsight(progress, accuracy, weakest, stats) {
+            const totalQuestions = progress.totalQuestions || 0;
+            const quizzesAttempted = progress.quizzesAttempted || 0;
+            
+            if (quizzesAttempted === 0) {
+                return "Begin your learning journey by taking your first quiz to unlock personalized insights.";
+            }
+
+            // Find best and worst subjects
+            let bestSubject = '';
+            let worstSubject = '';
+            let maxRate = 0;
+            let minRate = 1;
+            
+            Object.keys(stats).forEach(subject => {
+                const s = stats[subject];
+                if ((s.attempts || 0) > 0) {
+                    const rate = s.correct / (s.attempts || 1);
+                    if (rate > maxRate) {
+                        maxRate = rate;
+                        bestSubject = subject;
+                    }
+                    if (rate < minRate) {
+                        minRate = rate;
+                        worstSubject = subject;
+                    }
+                }
+            });
+
+            // Generate insight message
+            let insight = '';
+            const readinessTarget = 80;
+            const quizzesNeeded = Math.max(0, Math.ceil((readinessTarget - accuracy) / 10));
+            
+            if (accuracy >= 85) {
+                insight = `Excellent progress! You excel in ${bestSubject}. ${worstSubject ? 'Focus on strengthening your ' + worstSubject + ' skills to reach mastery.' : 'Keep practicing to maintain your momentum.'}`;
+            } else if (accuracy >= 75) {
+                insight = `Good work! You're strong in ${bestSubject}, but ${worstSubject} needs attention. Practice ${quizzesNeeded} more ${quizzesNeeded === 1 ? 'quiz' : 'quizzes'} to boost your readiness.`;
+            } else if (accuracy >= 60) {
+                insight = `You show promise in ${bestSubject}, but ${worstSubject} requires focus. Complete ${quizzesNeeded} more ${quizzesNeeded === 1 ? 'quiz' : 'quizzes'} to improve your readiness level.`;
+            } else {
+                insight = `Let's boost your performance! Focus on ${worstSubject} and practice consistently. ${quizzesNeeded} more ${quizzesNeeded === 1 ? 'quiz' : 'quizzes'} can make a real difference.`;
+            }
+            
+            return insight;
+        }
+
         function loadDashboardStats(){
             const progress = loadProgress() || initializeProgress();
             const quizzesAttempted = progress.quizzesAttempted || 0;
@@ -1452,6 +1618,12 @@
             if(!anyAttempted) weakest = 'No Data Yet';
 
             const predicted = Math.round(accuracy / 2);
+            
+            // Generate and display AI Insight
+            const aiInsightText = document.getElementById('aiInsightText');
+            if (aiInsightText) {
+                aiInsightText.textContent = generateAIInsight(progress, accuracy, weakest, stats);
+            }
 
             const qEl = document.getElementById('questions-value'); if(qEl) qEl.textContent = (totalQuestions || 0).toLocaleString();
             const aEl = document.getElementById('accuracy-value'); if(aEl) aEl.textContent = accuracy + '%';
@@ -1602,9 +1774,34 @@
         }
 
         function selectSubject(subject){
-            window.location.href = 'quiz.html?subject=' + encodeURIComponent(subject);
+            const transitionOverlay = document.getElementById('pageTransition');
+            if (transitionOverlay) {
+                transitionOverlay.classList.remove('fade-out');
+                transitionOverlay.classList.add('fade-in');
+                setTimeout(() => {
+                    window.location.href = 'quiz.html?subject=' + encodeURIComponent(subject);
+                }, 400);
+            } else {
+                window.location.href = 'quiz.html?subject=' + encodeURIComponent(subject);
+            }
+        }
+
+        function handleNavigation(href) {
+            event && event.preventDefault();
+            event && event.stopPropagation();
+            const transitionOverlay = document.getElementById('pageTransition');
+            if (transitionOverlay) {
+                transitionOverlay.classList.remove('fade-out');
+                transitionOverlay.classList.add('fade-in');
+                setTimeout(() => { window.location.href = href; }, 400);
+            } else {
+                window.location.href = href;
+            }
         }
     </script>
+    <!-- PAGE TRANSITION OVERLAY -->
+    <div class="page-transition-overlay" id="pageTransition"></div>
+
     <!-- LOGOUT CONFIRMATION MODAL -->
     <div class="logout-modal-overlay" id="logoutModal">
         <div class="logout-modal-content">
