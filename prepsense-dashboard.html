@@ -131,6 +131,54 @@
             background-color: rgba(240, 214, 55, 0.25);
         }
 
+        /* DROPDOWN STYLES */
+        .dropdown-item {
+            position: relative;
+        }
+
+        .dropdown-arrow {
+            margin-left: auto;
+            transition: transform 0.3s ease;
+            display: inline-block;
+        }
+
+        .dropdown-arrow.rotate {
+            transform: rotate(180deg);
+        }
+
+        .subject-submenu {
+            list-style: none;
+            display: none;
+            flex-direction: column;
+            gap: 0;
+            margin-top: 0;
+            padding: 8px 0;
+            background-color: rgba(18, 44, 79, 0.05);
+            border-radius: 8px;
+            margin: 5px 0 0 0;
+        }
+
+        .subject-submenu.show {
+            display: flex;
+        }
+
+        .submenu-item {
+            padding: 12px 16px 12px 40px;
+            color: #a8b8cc;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 6px;
+            margin: 2px 8px;
+        }
+
+        .submenu-item:hover {
+            background-color: var(--accent-yellow);
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+
         /* MAIN CONTENT AREA */
         .main-content {
             flex: 1;
@@ -795,10 +843,17 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" onclick="handleNavClick(event)">
+                    <a class="nav-link" onclick="toggleSubjectDropdown(event)">
                         <span class="nav-icon">📝</span>
                         <span>Practice Quiz</span>
+                        <span class="dropdown-arrow">▼</span>
                     </a>
+                    <ul class="subject-submenu" id="subjectDropdown">
+                        <li class="submenu-item" onclick="selectSubject('Physics')">Physics</li>
+                        <li class="submenu-item" onclick="selectSubject('Maths')">Maths</li>
+                        <li class="submenu-item" onclick="selectSubject('Chemistry')">Chemistry</li>
+                        <li class="submenu-item" onclick="selectSubject('Biology')">Biology</li>
+                    </ul>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" onclick="handleNavClick(event)">
@@ -1101,6 +1156,21 @@
             try{ localStorage.removeItem('currentUser'); localStorage.removeItem('role'); localStorage.removeItem('studentID'); localStorage.removeItem('studentName'); }catch(e){}
             // redirect
             window.location.href = 'index.html';
+        }
+
+        function toggleSubjectDropdown(event){
+            event && event.preventDefault();
+            const submenu = document.getElementById('subjectDropdown');
+            const arrow = event.currentTarget.querySelector('.dropdown-arrow');
+            
+            if(submenu){
+                submenu.classList.toggle('show');
+                if(arrow) arrow.classList.toggle('rotate');
+            }
+        }
+
+        function selectSubject(subject){
+            window.location.href = 'quiz.html?subject=' + encodeURIComponent(subject);
         }
     </script>
 </body>
