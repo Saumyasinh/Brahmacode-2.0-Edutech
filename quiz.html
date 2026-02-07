@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+`<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -739,12 +739,37 @@
             try{ localStorage.setItem(attemptsKey, JSON.stringify(attempts)); }catch(e){}
         }
 
+        function createAndSaveStudyPlan(subject, weakTopicsArray){
+            const studentID = localStorage.getItem('studentID') || 'demo-student';
+            const key = `studyPlans_${studentID}`;
+            const now = new Date().toISOString();
+            const plan = {
+                id: 'plan_' + Date.now(),
+                date: now,
+                subject: subject,
+                weakTopics: weakTopicsArray,
+                days: [
+                    { day: 1, title: 'Concepts & Theory', topic: weakTopicsArray[0] || 'Overview', duration: 45 },
+                    { day: 2, title: 'Practice Problems', topic: weakTopicsArray[1] || 'Practice', duration: 45 },
+                    { day: 3, title: 'Mock Test & Review', topic: weakTopicsArray[2] || 'Mock Test', duration: 45 }
+                ]
+            };
+            let plans = [];
+            try{ plans = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { plans = []; }
+            plans.push(plan);
+            try{ localStorage.setItem(key, JSON.stringify(plans)); } catch(e) {}
+            return plan;
+        }
+
         function generateStudyPlan(){
-            // Pass weak topics and subject to study plan page
+            // Save a study plan for this student and redirect to the study-plan page
             const weakTopics = getWeakTopics();
             const weakInSubject = weakTopics.filter(w => w.subject === currentSubject);
-            const weakTopicsList = weakInSubject.map(w => w.topic).join(',');
-            
+            const weakTopicsArr = weakInSubject.map(w => w.topic);
+            // persist plan
+            createAndSaveStudyPlan(currentSubject, weakTopicsArr);
+
+            const weakTopicsList = weakTopicsArr.join(',');
             window.location.href = `study-plan.html?subject=${currentSubject}&weakTopics=${encodeURIComponent(weakTopicsList)}`;
         }
 

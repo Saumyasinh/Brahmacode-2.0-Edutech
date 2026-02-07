@@ -421,6 +421,7 @@
                         <button class="back-btn" onclick="generateNewPlan()">🔄 Generate New Plan</button>
 
                         <div id="weakTopicsSummary"></div>
+                        <div id="savedPlansList" style="margin-top:16px; margin-bottom:16px;"></div>
 
                         <!-- DAY BY DAY PLAN -->
                         <div id="studyPlanDays"></div>
@@ -479,6 +480,7 @@
         // INIT
         document.addEventListener('DOMContentLoaded', function() {
             loadStudyPlan();
+            renderSavedPlans();
             loadAttemptHistory();
         });
 
@@ -610,9 +612,88 @@
             `;
         }
 
+        function savePlanObject(plan) {
+            const studentID = localStorage.getItem('studentID') || 'demo-student';
+            const key = `studyPlans_${studentID}`;
+            let plans = [];
+            try { plans = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { plans = []; }
+            plans.push(plan);
+            try { localStorage.setItem(key, JSON.stringify(plans)); } catch(e) {}
+        }
+
+        function getSavedPlans() {
+            const studentID = localStorage.getItem('studentID') || 'demo-student';
+            const key = `studyPlans_${studentID}`;
+            try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { return []; }
+        }
+
+        function renderSavedPlans() {
+            const container = document.getElementById('savedPlansList');
+            const plans = getSavedPlans();
+            if (!plans || plans.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            let html = '<h3 style="margin-bottom:8px;">Saved Study Plans</h3>';
+            html += '<div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px;">';
+            plans.slice().reverse().forEach(p => {
+                const date = new Date(p.date).toLocaleString();
+                const topics = (p.weakTopics && p.weakTopics.length) ? p.weakTopics.join(', ') : 'General';
+                html += `<button class="resource-btn" onclick='displayPlan(${JSON.stringify(p).replace(/'/g, "\\'")})'>${p.subject} • ${topics} • ${date.split(',')[0]}</button>`;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function displayPlan(plan) {
+            // Render the plan.days into the studyPlanDays element
+            if (!plan || !plan.days) return;
+            let planHTML = '';
+            plan.days.forEach(d => {
+                const subject = plan.subject || 'Subject';
+                const topic = d.topic || 'Topic';
+                const res = (resources[subject] && resources[subject][topic]) || { youtube: '#', notes: 'Notes not available', practice: 'Practice tasks' };
+                planHTML += `\n            <div class="day-plan">\n                <div class="day-header">\n                    <div class="day-badge">Day ${d.day}</div>\n                    <div class="day-info">\n                        <h3>${d.title}</h3>\n                        <p>${subject} - ${topic} | ⏱ ${d.duration} minutes</p>\n                    </div>\n                </div>\n\n                <div class="topics-list">\n                    <div class="topic-item">\n                        <span class="topic-name">✓ Review core concepts from notes</span>\n                        <span class="duration">15 min</span>\n                    </div>\n                    <div class="topic-item">\n                        <span class="topic-name">✓ Watch explanation videos</span>\n                        <span class="duration">20 min</span>\n                    </div>\n                    <div class="topic-item">\n                        <span class="topic-name">✓ ${res.practice}</span>\n                        <span class="duration">10 min</span>\n                    </div>\n                </div>\n\n                <div class="resources">\n                    <strong>📚 Resources:</strong>\n                    <div style="margin-top: 10px;">\n                        <a href="${res.youtube}" target="_blank" class="resource-btn">🎥 YouTube Videos</a>\n                        <button class="resource-btn" onclick="alert('📖\\n\\n${res.notes.replace(/'/g, "\\'") }')">📖 Notes Summary</button>\n                    </div>\n                </div>\n            </div>\n            `;
+            });
+            document.getElementById('studyPlanDays').innerHTML = planHTML;
+        }
+
         function generateNewPlan() {
-            alert('✨ New study plan generated based on your weak areas! Focus on these 3 days to improve your exam readiness.');
-            loadStudyPlan();
+            // Create a new plan from current weak topics context and save it
+            const params = new URLSearchParams(window.location.search);
+            const urlWeakTopics = params.get('weakTopics');
+            const urlSubject = params.get('subject') || 'Physics';
+            let topics = [];
+            if (urlWeakTopics && urlWeakTopics.length > 0) {
+                topics = urlWeakTopics.split(',').filter(t => t.length > 0);
+            } else {
+                // fallback: use top weak topics from attempts
+                const studentID = localStorage.getItem('studentID') || 'demo-student';
+                const attemptsKey = `attempts_${studentID}`;
+                let attempts = [];
+                try { attempts = JSON.parse(localStorage.getItem(attemptsKey) || '[]'); } catch(e) {}
+                const weak = [];
+                attempts.forEach(a => {
+                    const acc = a.accuracy || ((a.score / a.outOf) * 100);
+                    if (acc < 75) weak.push(a.topic);
+                });
+                topics = weak.slice(0,3);
+            }
+
+            const plan = {
+                id: 'plan_' + Date.now(),
+                date: new Date().toISOString(),
+                subject: urlSubject,
+                weakTopics: topics,
+                days: [
+                    { day: 1, title: 'Concepts & Theory', topic: topics[0] || 'Overview', duration: 45 },
+                    { day: 2, title: 'Practice Problems', topic: topics[1] || 'Practice', duration: 45 },
+                    { day: 3, title: 'Mock Test & Review', topic: topics[2] || 'Mock Test', duration: 45 }
+                ]
+            };
+            savePlanObject(plan);
+            renderSavedPlans();
+            displayPlan(plan);
         }
 
         function loadAttemptHistory() {
@@ -675,6 +756,16 @@
                 `;
             });
             document.getElementById('attemptsHistory').innerHTML = html;
+            // Also show saved study plans in history
+            const plans = getSavedPlans();
+            const plansContainer = document.getElementById('weakTopicsHistory');
+            if (plans && plans.length > 0) {
+                let ph = '<h3 style="margin-bottom:12px;">Saved Study Plans</h3>';
+                plans.slice().reverse().forEach(p => {
+                    ph += `<div class="attempt-card">\n<div class="attempt-info">\n<div class="attempt-subject">${p.subject}</div>\n<div class="attempt-topic">${(p.weakTopics && p.weakTopics.length) ? p.weakTopics.join(', ') : 'General'}</div>\n<div class="attempt-date">📅 ${new Date(p.date).toLocaleString()}</div>\n</div>\n<div style=\"display:flex;flex-direction:column;align-items:center;gap:8px;\">\n<button class=\"resource-btn\" onclick=\"displayPlan(${JSON.stringify(p).replace(/'/g, "\\'" )})\">View Plan</button>\n</div>\n</div>`;
+                });
+                plansContainer.innerHTML = ph;
+            }
         }
     </script>
 </body>
