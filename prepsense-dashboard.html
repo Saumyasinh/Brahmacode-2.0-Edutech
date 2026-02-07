@@ -1043,7 +1043,105 @@
             }
 
             initializeDashboard(currentUser);
+            loadDashboardStats();
         });
+
+        /* ==========================
+           Student Progress Helpers
+           Key: progress_<studentID>
+           Functions provided:
+             - initializeProgress()
+             - updateProgress(subject, correct, total)
+             - loadDashboardStats()
+           ========================== */
+
+        function _getProgressKey(studentID){ return `progress_${studentID}`; }
+
+        function initializeProgress(){
+            const studentID = localStorage.getItem('studentID') || 'demo-student';
+            const key = _getProgressKey(studentID);
+            try{
+                const existing = JSON.parse(localStorage.getItem(key) || 'null');
+                if(existing) return existing;
+            }catch(e){ }
+            const progress = {
+                quizzesAttempted: 0,
+                totalQuestions: 0,
+                correctAnswers: 0,
+                subjectStats: {
+                    Physics: {attempts:0, correct:0},
+                    Maths: {attempts:0, correct:0},
+                    Chemistry: {attempts:0, correct:0},
+                    Biology: {attempts:0, correct:0}
+                }
+            };
+            try{ localStorage.setItem(key, JSON.stringify(progress)); }catch(e){}
+            return progress;
+        }
+
+        function loadProgress(){
+            const studentID = localStorage.getItem('studentID') || 'demo-student';
+            const key = _getProgressKey(studentID);
+            try{ return JSON.parse(localStorage.getItem(key) || 'null') || null; }catch(e){ return null; }
+        }
+
+        function saveProgress(progress){
+            const studentID = localStorage.getItem('studentID') || 'demo-student';
+            const key = _getProgressKey(studentID);
+            try{ localStorage.setItem(key, JSON.stringify(progress)); }catch(e){}
+        }
+
+        function updateProgress(subject, correct, total){
+            const studentID = localStorage.getItem('studentID') || 'demo-student';
+            let progress = loadProgress();
+            if(!progress) progress = initializeProgress();
+            progress.quizzesAttempted = (progress.quizzesAttempted || 0) + 1;
+            progress.totalQuestions = (progress.totalQuestions || 0) + (total || 0);
+            progress.correctAnswers = (progress.correctAnswers || 0) + (correct || 0);
+            if(!progress.subjectStats) progress.subjectStats = {Physics:{attempts:0,correct:0},Maths:{attempts:0,correct:0},Chemistry:{attempts:0,correct:0},Biology:{attempts:0,correct:0}};
+            if(!progress.subjectStats[subject]) progress.subjectStats[subject] = {attempts:0, correct:0};
+            progress.subjectStats[subject].attempts += (total || 0);
+            progress.subjectStats[subject].correct += (correct || 0);
+            saveProgress(progress);
+            loadDashboardStats();
+            return progress;
+        }
+
+        function loadDashboardStats(){
+            const progress = loadProgress() || initializeProgress();
+            const quizzesAttempted = progress.quizzesAttempted || 0;
+            const totalQuestions = progress.totalQuestions || 0;
+            const correctAnswers = progress.correctAnswers || 0;
+
+            const accuracy = totalQuestions ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+
+            let weakest = 'No Data Yet';
+            let minRate = 1;
+            const stats = progress.subjectStats || {};
+            let anyAttempted = false;
+            Object.keys(stats).forEach(sub => {
+                const s = stats[sub];
+                if((s.attempts || 0) > 0){
+                    anyAttempted = true;
+                    const rate = s.correct / (s.attempts || 1);
+                    if(rate < minRate){ minRate = rate; weakest = sub; }
+                }
+            });
+            if(!anyAttempted) weakest = 'No Data Yet';
+
+            const predicted = Math.round(accuracy / 2);
+
+            const qEl = document.getElementById('questions-value'); if(qEl) qEl.textContent = (totalQuestions || 0).toLocaleString();
+            const aEl = document.getElementById('accuracy-value'); if(aEl) aEl.textContent = (quizzesAttempted ? accuracy + '%' : 'No Data Yet');
+            const wEl = document.getElementById('weakest-subject'); if(wEl) wEl.textContent = weakest;
+            const pEl = document.getElementById('predicted-score'); if(pEl) pEl.textContent = (quizzesAttempted ? (predicted + '/50') : 'No Data Yet');
+            const bar = document.querySelector('.progress-bar'); if(bar) bar.style.width = (quizzesAttempted ? Math.min(100, Math.round((predicted/50)*100)) + '%' : '0%');
+            const readEl = document.getElementById('readiness-percentage'); if(readEl) readEl.textContent = (quizzesAttempted ? String(accuracy) : '0') + '%';
+
+            const degrees = (parseInt(quizzesAttempted ? accuracy : 0,10) / 100) * 360;
+            const progressCircle = document.querySelector('.progress-circle');
+            if(progressCircle) progressCircle.style.background = `conic-gradient(var(--accent-yellow) 0deg, var(--accent-yellow) ${degrees}deg, #e5e5e5 ${degrees}deg, #e5e5e5 360deg)`;
+        }
 
         function initializeDashboard(currentUser){
             // Resolve student id and name

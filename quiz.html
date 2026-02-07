@@ -731,6 +731,11 @@
             const weakHTML = weakCount > 0 ? `<span class="weak-topic-tag">⚠️ ${weakCount} weak area(s) detected in ${currentTopic}</span>` : '<span style="color: #28a745; font-weight: 700;">✅ Great job! No major weak areas.</span>';
             document.getElementById('finalWeakTopics').innerHTML = weakHTML;
 
+            // Update progress (if function exists from dashboard)
+            if(typeof updateProgress === 'function'){
+                updateProgress(currentSubject, totalScore, currentQuestions.length);
+            }
+
             // Store attempt
             const attempt = {
                 subject: currentSubject,
