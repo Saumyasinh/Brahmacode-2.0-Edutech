@@ -154,7 +154,7 @@
             if (account) {
                 // Store current user session with full name
                 localStorage.setItem('currentUser', JSON.stringify({ role: 'student', studentId: studentId, fullName: account.fullName }));
-                window.location.href = 'dashboard.html';
+                window.location.href = 'prepsense-dashboard.html';
             } else {
                 showError('Invalid Student ID or password');
             }
@@ -198,7 +198,7 @@
 
             // Auto-login after signup
             localStorage.setItem('currentUser', JSON.stringify({ role: 'student', studentId: studentId, fullName: fullName }));
-            window.location.href = 'dashboard.html';
+            window.location.href = 'prepsense-dashboard.html';
         }
     </script>
 </body>

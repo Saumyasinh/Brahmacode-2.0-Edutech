@@ -17,6 +17,13 @@ export default function StudentLogin({ onLogin, onBack }) {
   const handleSubmit = (e) => {
     e.preventDefault()
     if (credentials.studentId && credentials.password) {
+      // Store student data in localStorage
+      const studentData = {
+        id: credentials.studentId,
+        name: credentials.studentId === 'AP001' ? 'Aryan Patel' : `Student ${credentials.studentId}`,
+        loginTime: new Date().toISOString()
+      }
+      localStorage.setItem('studentData', JSON.stringify(studentData))
       onLogin()
     }
   }
@@ -38,7 +45,7 @@ export default function StudentLogin({ onLogin, onBack }) {
             name="studentId"
             value={credentials.studentId}
             onChange={handleChange}
-            placeholder="Enter your Student ID"
+            placeholder="e.g., AP001 (Aryan Patel)"
             className="form-input"
             required
           />

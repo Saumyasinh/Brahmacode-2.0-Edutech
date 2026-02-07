@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PrepSense AI - Exam Readiness Dashboard</title>
+    <style>
+        /* ============================================
+           RESET & BASE STYLES
+           ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-dark: #122C4F;
+            --background-cream: #FBF9E3;
+            --accent-yellow: #F0D637;
+            --accent-blue: #5B88B2;
+            --white: #FFFFFF;
+            --light-gray: #F5F3ED;
+            --shadow-sm: 0 2px 8px rgba(18, 44, 79, 0.08);
+            --shadow-md: 0 4px 16px rgba(18, 44, 79, 0.12);
+            --shadow-lg: 0 8px 24px rgba(18, 44, 79, 0.15);
+            --border-radius: 16px;
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-cream);
+            color: var(--primary-dark);
+            line-height: 1.6;
+        }
+
+        /* ============================================
+           LAYOUT STRUCTURE
+           ============================================ */
+        .container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* LEFT SIDEBAR */
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(180deg, var(--primary-dark) 0%, #0f1f37 100%);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-lg);
+            overflow-y: auto;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
+            color: var(--accent-yellow);
+            font-weight: 700;
+            font-size: 16px;
+            padding: 12px 0;
+        }
+
+        .sidebar-brand-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--accent-yellow);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-dark);
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            flex: 1;
+        }
+
+        .nav-item {
+            margin-bottom: 15px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 13px 16px;
+            color: #a8b8cc;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: var(--transition);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(240, 214, 55, 0.1);
+            color: var(--accent-yellow);
+        }
+
+        .nav-link.active {
+            background-color: var(--accent-yellow);
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .logout-btn {
+            margin-top: auto;
+            background-color: rgba(240, 214, 55, 0.15);
+        }
+
+        .logout-btn:hover {
+            background-color: rgba(240, 214, 55, 0.25);
+        }
+
+        /* MAIN CONTENT AREA */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        /* TOP HEADER (NAV BAR) */
+        .header {
+            background-color: var(--white);
+            padding: 16px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+            border-bottom: 1px solid rgba(18, 44, 79, 0.05);
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .exam-readiness-badge {
+            background: linear-gradient(135deg, var(--accent-yellow) 0%, #f5c61a 100%);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-indicator {
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary-dark);
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .notification-bell {
+            width: 40px;
+            height: 40px;
+            background-color: var(--light-gray);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 20px;
+            position: relative;
+        }
+
+        .notification-bell:hover {
+            background-color: var(--accent-yellow);
+            color: var(--primary-dark);
+        }
+
+        .notification-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #ff6b6b;
+            border-radius: 50%;
+            position: absolute;
+            top: 8px;
+            right: 8px;
+        }
+
+        .student-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .student-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-yellow) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: 700;
+            font-size: 18px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .student-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .student-name {
+            font-weight: 600;
+            color: var(--primary-dark);
+            font-size: 14px;
+        }
+
+        .student-role {
+            font-size: 12px;
+            color: #7a8290;
+        }
+
+        /* DASHBOARD CONTENT */
+        .dashboard {
+            padding: 30px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* WELCOME HERO CARD */
+        .welcome-card {
+            background: linear-gradient(135deg, var(--accent-blue) 0%, #7fa8d1 100%);
+            padding: 40px;
+            border-radius: var(--border-radius);
+            color: var(--white);
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .welcome-content h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .welcome-content p {
+            font-size: 16px;
+            opacity: 0.95;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-yellow);
+            color: var(--primary-dark);
+        }
+
+        .btn-primary:hover {
+            background-color: #f5c61a;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(240, 214, 55, 0.3);
+        }
+
+        .welcome-decoration {
+            width: 150px;
+            height: 150px;
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+        }
+
+        /* CONTENT GRID */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        /* EXAM READINESS CARD */
+        .exam-readiness-card {
+            background: var(--white);
+            padding: 35px 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .circular-progress-container {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .circular-progress {
+            position: relative;
+            width: 180px;
+            height: 180px;
+        }
+
+        .progress-circle {
+            width: 100%;
+            height: 100%;
+            background: conic-gradient(
+                var(--accent-yellow) 0deg,
+                var(--accent-yellow) calc(68 * 3.6deg),
+                #e5e5e5 calc(68 * 3.6deg),
+                #e5e5e5 360deg
+            );
+            border-radius: 50%;
+            box-shadow: inset 0 0 0 8px var(--white);
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .progress-percentage {
+            font-size: 42px;
+            font-weight: 700;
+            color: var(--accent-yellow);
+        }
+
+        .progress-label {
+            font-size: 12px;
+            color: #7a8290;
+            margin-top: 4px;
+        }
+
+        .readiness-status {
+            background: linear-gradient(135deg, rgba(240, 214, 55, 0.15) 0%, rgba(91, 136, 178, 0.1) 100%);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #d97706;
+            margin-bottom: 12px;
+            display: inline-block;
+        }
+
+        .readiness-helper {
+            font-size: 13px;
+            color: #7a8290;
+            margin-top: 15px;
+        }
+
+        /* STATISTICS CARDS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: var(--white);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+            border-left: 4px solid var(--accent-yellow);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-card.accent-blue {
+            border-left-color: var(--accent-blue);
+        }
+
+        .stat-card.accent-yellow {
+            border-left-color: var(--accent-yellow);
+        }
+
+        .stat-card.accent-orange {
+            border-left-color: #ff9a56;
+        }
+
+        .stat-card.accent-red {
+            border-left-color: #ff6b6b;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, rgba(240, 214, 55, 0.15) 0%, rgba(240, 214, 55, 0.05) 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+
+        .stat-card.accent-blue .stat-icon {
+            background: linear-gradient(135deg, rgba(91, 136, 178, 0.15) 0%, rgba(91, 136, 178, 0.05) 100%);
+        }
+
+        .stat-card.accent-orange .stat-icon {
+            background: linear-gradient(135deg, rgba(255, 154, 86, 0.15) 0%, rgba(255, 154, 86, 0.05) 100%);
+        }
+
+        .stat-card.accent-red .stat-icon {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.15) 0%, rgba(255, 107, 107, 0.05) 100%);
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #7a8290;
+            font-weight: 500;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 12px;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background-color: #e5e5e5;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-yellow) 0%, #f5c61a 100%);
+            border-radius: 3px;
+            transition: width 0.6s ease;
+        }
+
+        /* RECENT ATTEMPTS TABLE */
+        .recent-attempts {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            padding: 30px;
+            grid-column: 1 / -1;
+        }
+
+        .recent-attempts h2 {
+            font-size: 18px;
+            color: var(--primary-dark);
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table thead {
+            background-color: var(--light-gray);
+        }
+
+        table th {
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: none;
+        }
+
+        table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+            color: var(--primary-dark);
+        }
+
+        table tbody tr {
+            transition: var(--transition);
+        }
+
+        table tbody tr:hover {
+            background-color: #fdfbf5;
+        }
+
+        .score-cell {
+            font-weight: 600;
+            color: var(--accent-yellow);
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .tag.weak {
+            background-color: rgba(255, 107, 107, 0.15);
+            color: #ff6b6b;
+        }
+
+        .tag.excellent {
+            background-color: rgba(76, 175, 80, 0.15);
+            color: #4caf50;
+        }
+
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .welcome-card {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+
+            .welcome-decoration {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                padding: 15px;
+                flex-direction: row;
+                height: auto;
+            }
+
+            .sidebar-brand {
+                margin-bottom: 0;
+            }
+
+            .nav-menu {
+                display: flex;
+                gap: 10px;
+                flex: 1;
+                margin: 0 20px;
+            }
+
+            .nav-item {
+                margin-bottom: 0;
+            }
+
+            .nav-link {
+                padding: 10px 12px;
+                font-size: 12px;
+            }
+
+            .nav-icon {
+                width: 16px;
+                height: 16px;
+                font-size: 14px;
+            }
+
+            .logout-btn {
+                margin-top: 0;
+                margin-left: auto;
+            }
+
+            .dashboard {
+                padding: 20px;
+            }
+
+            .header {
+                flex-wrap: wrap;
+                gap: 15px;
+                padding: 12px 20px;
+            }
+
+            .header-right {
+                width: 100%;
+                justify-content: space-between;
+                gap: 15px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .welcome-card {
+                padding: 25px;
+            }
+
+            .welcome-content h1 {
+                font-size: 24px;
+            }
+
+            .circular-progress-container {
+                width: 140px;
+                height: 140px;
+            }
+
+            .progress-circle {
+                width: 140px;
+                height: 140px;
+            }
+
+            .progress-percentage {
+                font-size: 32px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar {
+                padding: 10px;
+                overflow-x: auto;
+            }
+
+            .nav-menu {
+                gap: 5px;
+            }
+
+            .nav-link {
+                padding: 8px 10px;
+                gap: 8px;
+            }
+
+            .header {
+                padding: 10px 15px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-right {
+                width: 100%;
+                justify-content: flex-start;
+                gap: 10px;
+            }
+
+            .student-profile {
+                width: 100%;
+            }
+
+            .dashboard {
+                padding: 15px;
+            }
+
+            .welcome-card {
+                padding: 20px;
+                border-radius: 12px;
+            }
+
+            .welcome-content h1 {
+                font-size: 20px;
+            }
+
+            .welcome-content p {
+                font-size: 14px;
+            }
+
+            .exam-readiness-card {
+                padding: 20px;
+            }
+
+            .stat-card {
+                padding: 18px;
+            }
+
+            .stat-value {
+                font-size: 24px;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            table th,
+            table td {
+                padding: 10px 8px;
+            }
+        }
+
+        /* SCROLLBAR STYLING */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-yellow);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #f5c61a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ============================================
+             LEFT SIDEBAR NAVIGATION
+             ============================================ -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="sidebar-brand-icon">P</div>
+                <span>PrepSense</span>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a class="nav-link active" onclick="handleNavClick(event)">
+                        <span class="nav-icon">🏠</span>
+                        <span>Home</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="handleNavClick(event)">
+                        <span class="nav-icon">📝</span>
+                        <span>Practice Quiz</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="handleNavClick(event)">
+                        <span class="nav-icon">📊</span>
+                        <span>Progress Report</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="handleNavClick(event)">
+                        <span class="nav-icon">⚠️</span>
+                        <span>Weak Topics</span>
+                    </a>
+                </li>
+            </ul>
+
+            <a class="nav-link logout-btn" onclick="handleLogout(event)">
+                <span class="nav-icon">🚪</span>
+                <span>Logout</span>
+            </a>
+        </aside>
+
+        <!-- ============================================
+             MAIN CONTENT AREA
+             ============================================ -->
+        <div class="main-content">
+            <!-- TOP HEADER / NAV BAR -->
+            <header class="header">
+                <div class="header-title">Dashboard</div>
+                <div class="header-right">
+                    <div class="exam-readiness-badge">
+                        <span class="badge-indicator"></span>
+                        <span>Exam Readiness: <span id="badge-readiness">68</span>%</span>
+                    </div>
+
+                    <div class="notification-bell">
+                        🔔
+                        <span class="notification-dot"></span>
+                    </div>
+
+                    <div class="student-profile">
+                        <div class="student-avatar">AP</div>
+                        <div class="student-info">
+                            <div class="student-name">Aryan Patel</div>
+                            <div class="student-role">Student</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- DASHBOARD CONTENT -->
+            <div class="dashboard">
+                <!-- WELCOME HERO CARD -->
+                <div class="welcome-card">
+                    <div class="welcome-content">
+                        <h1>Welcome back, Aryan!</h1>
+                        <p>Ready for your next quiz?</p>
+                        <button class="btn btn-primary">Continue Practice</button>
+                    </div>
+                    <div class="welcome-decoration">🎯</div>
+                </div>
+
+                <!-- MAIN GRID LAYOUT -->
+                <div class="dashboard-grid">
+                    <!-- LEFT COLUMN: STATISTICS -->
+                    <div class="left-column">
+                        <!-- STATISTICS GRID (4 CARDS) -->
+                        <div class="stats-grid">
+                            <!-- Card 1: Questions Practiced -->
+                            <div class="stat-card accent-yellow">
+                                <div class="stat-icon">📚</div>
+                                <div class="stat-label">Questions Practiced</div>
+                                <div class="stat-value" id="questions-value">1250</div>
+                            </div>
+
+                            <!-- Card 2: Overall Accuracy -->
+                            <div class="stat-card accent-blue">
+                                <div class="stat-icon">✅</div>
+                                <div class="stat-label">Overall Accuracy</div>
+                                <div class="stat-value" id="accuracy-value">85%</div>
+                            </div>
+
+                            <!-- Card 3: Weakest Subject -->
+                            <div class="stat-card accent-orange">
+                                <div class="stat-icon">📖</div>
+                                <div class="stat-label">Weakest Subject</div>
+                                <div class="stat-value" id="weakest-subject" style="font-size: 20px;">Physics</div>
+                            </div>
+
+                            <!-- Card 4: Predicted Score -->
+                            <div class="stat-card accent-red">
+                                <div class="stat-icon">🎯</div>
+                                <div class="stat-label">Predicted Score</div>
+                                <div class="stat-value" id="predicted-score">32/50</div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: 64%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: EXAM READINESS -->
+                    <div class="right-column">
+                        <!-- EXAM READINESS CARD -->
+                        <div class="exam-readiness-card">
+                            <div class="circular-progress-container">
+                                <div class="circular-progress">
+                                    <div class="progress-circle"></div>
+                                    <div class="progress-text">
+                                        <div class="progress-percentage" id="readiness-percentage">68%</div>
+                                        <div class="progress-label">Exam Readiness</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="readiness-status">⚠️ Needs Revision</div>
+                            <div class="readiness-helper">Reach 80% to be ready!</div>
+                        </div>
+                    </div>
+
+                    <!-- RECENT ATTEMPTS TABLE (FULL WIDTH) -->
+                    <div class="recent-attempts">
+                        <h2>Recent Attempts</h2>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Subject</th>
+                                        <th>Topic</th>
+                                        <th>Score</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Physics</td>
+                                        <td>Motion</td>
+                                        <td class="score-cell">8/10</td>
+                                        <td>Apr 24, 2024</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Maths</td>
+                                        <td>Trigonometry</td>
+                                        <td class="score-cell">6/10</td>
+                                        <td>Apr 23, 2024</td>
+                                        <td><span class="tag weak">Weak</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Chemistry</td>
+                                        <td>Acids & Bases</td>
+                                        <td class="score-cell">9/10</td>
+                                        <td>Apr 23, 2024</td>
+                                        <td><span class="tag excellent">Excellent</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ============================================
+           DASHBOARD DATA & LOGIC
+           ============================================ */
+
+        // Store dashboard values in variables
+        const dashboardData = {
+            studentName: 'Aryan Patel',
+            questions: 1250,
+            accuracy: 85,
+            readiness: 68,
+            weakestSubject: 'Physics',
+            predictedScore: 32,
+            maxScore: 50,
+        };
+
+        /* ============================================
+           DOM CONTENT LOADED - INITIALIZE DASHBOARD
+           ============================================ */
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDashboard();
+        });
+
+        function initializeDashboard() {
+            // Inject values into the DOM
+            updateDashboardValues();
+
+            // Update circular progress indicator
+            updateCircularProgress();
+
+            // Update progress bars
+            updateProgressBars();
+        }
+
+        function updateDashboardValues() {
+            // Update questions practiced
+            document.getElementById('questions-value').textContent = 
+                dashboardData.questions.toLocaleString();
+
+            // Update overall accuracy
+            document.getElementById('accuracy-value').textContent = 
+                dashboardData.accuracy + '%';
+
+            // Update weakest subject
+            document.getElementById('weakest-subject').textContent = 
+                dashboardData.weakestSubject;
+
+            // Update predicted score
+            document.getElementById('predicted-score').textContent = 
+                dashboardData.predictedScore + '/' + dashboardData.maxScore;
+
+            // Update exam readiness percentage
+            document.getElementById('readiness-percentage').textContent = 
+                dashboardData.readiness + '%';
+
+            // Update badge
+            document.getElementById('badge-readiness').textContent = 
+                dashboardData.readiness;
+        }
+
+        function updateCircularProgress() {
+            const percentage = dashboardData.readiness;
+            const degrees = (percentage / 100) * 360;
+
+            const progressCircle = document.querySelector('.progress-circle');
+            progressCircle.style.background = `conic-gradient(
+                var(--accent-yellow) 0deg,
+                var(--accent-yellow) ${degrees}deg,
+                #e5e5e5 ${degrees}deg,
+                #e5e5e5 360deg
+            )`;
+        }
+
+        function updateProgressBars() {
+            const predictedScorePercentage = 
+                (dashboardData.predictedScore / dashboardData.maxScore) * 100;
+
+            const progressBar = document.querySelector('.progress-bar');
+            progressBar.style.width = predictedScorePercentage + '%';
+        }
+
+        /* ============================================
+           USER INTERACTIONS
+           ============================================ */
+
+        function handleNavClick(event) {
+            event.preventDefault();
+
+            // Remove active class from all nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+
+            // Add active class to clicked link
+            event.currentTarget.classList.add('active');
+
+            console.log('Navigation clicked:', event.currentTarget.textContent);
+        }
+
+        function handleLogout(event) {
+            event.preventDefault();
+            alert('Logging out from PrepSense AI. Goodbye, ' + dashboardData.studentName + '!');
+            console.log('User logged out');
+        }
+    </script>
+</body>
+</html>

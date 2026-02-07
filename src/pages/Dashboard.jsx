@@ -1,13 +1,20 @@
 import React, { useEffect, useState } from 'react'
+import StudentDashboard from './StudentDashboard'
 
 export default function Dashboard({ role, onLogout }) {
   const [parentName, setParentName] = useState('')
+  const [studentName, setStudentName] = useState('Aryan Patel')
 
   useEffect(() => {
     if (role === 'parent') {
       const currentParent = JSON.parse(localStorage.getItem('currentParent') || '{}')
       if (currentParent.fullName) {
         setParentName(currentParent.fullName)
+      }
+    } else if (role === 'student') {
+      const studentData = JSON.parse(localStorage.getItem('studentData') || '{}')
+      if (studentData.name) {
+        setStudentName(studentData.name)
       }
     }
   }, [role])
@@ -20,25 +27,7 @@ export default function Dashboard({ role, onLogout }) {
   const getDashboardContent = () => {
     switch(role) {
       case 'student':
-        return (
-          <>
-            <div className="welcome-message">
-              Welcome, Student! Here's your dashboard.
-            </div>
-            <div className="dashboard-card">
-              <h2>📚 Your Courses</h2>
-              <p>View and manage all your enrolled courses. Access course materials, assignments, and grades.</p>
-            </div>
-            <div className="dashboard-card">
-              <h2>📝 Assignments</h2>
-              <p>Check your pending assignments and submit your work. Track submission deadlines and grades.</p>
-            </div>
-            <div className="dashboard-card">
-              <h2>📊 Performance</h2>
-              <p>View your academic performance, progress reports, and get AI-powered study recommendations.</p>
-            </div>
-          </>
-        )
+        return <StudentDashboard studentName={studentName} onLogout={onLogout} />
       case 'teacher':
         return (
           <>

@@ -24,9 +24,11 @@ function App() {
   }
 
   const handleLogout = () => {
-    // Clear parent data if logging out
+    // Clear user data based on role
     if (userRole === 'parent') {
       localStorage.removeItem('currentParent')
+    } else if (userRole === 'student') {
+      localStorage.removeItem('studentData')
     }
     setIsLoggedIn(false)
     setUserRole(null)

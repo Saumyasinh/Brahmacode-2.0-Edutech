@@ -89,7 +89,7 @@
             if (account) {
                 // Store current user session
                 localStorage.setItem('currentUser', JSON.stringify({ role: 'teacher', teacherId: teacherId }));
-                window.location.href = 'dashboard.html';
+                window.location.href = 'prepsense-dashboard.html';
             } else {
                 showError('Invalid Teacher ID or password');
             }
