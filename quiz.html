@@ -628,6 +628,58 @@
             return shuffleArray(questionsPool).slice(0, 5);
         }
 
+        // === Progress Tracking Functions ===
+        function _getProgressKeyQuiz(studentID){ return `progress_${studentID}`; }
+
+        function initializeProgressQuiz(){
+            const studentID = localStorage.getItem('studentID') || 'demo-student';
+            const key = _getProgressKeyQuiz(studentID);
+            try{
+                const existing = JSON.parse(localStorage.getItem(key) || 'null');
+                if(existing) return existing;
+            }catch(e){ }
+            const progress = {
+                quizzesAttempted: 0,
+                totalQuestions: 0,
+                correctAnswers: 0,
+                subjectStats: {
+                    Physics: {attempts:0, correct:0},
+                    Maths: {attempts:0, correct:0},
+                    Chemistry: {attempts:0, correct:0},
+                    Biology: {attempts:0, correct:0}
+                }
+            };
+            try{ localStorage.setItem(key, JSON.stringify(progress)); }catch(e){}
+            return progress;
+        }
+
+        function loadProgressQuiz(){
+            const studentID = localStorage.getItem('studentID') || 'demo-student';
+            const key = _getProgressKeyQuiz(studentID);
+            try{ return JSON.parse(localStorage.getItem(key) || 'null') || null; }catch(e){ return null; }
+        }
+
+        function saveProgressQuiz(progress){
+            const studentID = localStorage.getItem('studentID') || 'demo-student';
+            const key = _getProgressKeyQuiz(studentID);
+            try{ localStorage.setItem(key, JSON.stringify(progress)); }catch(e){}
+        }
+
+        function updateProgressQuiz(subject, correct, total){
+            const studentID = localStorage.getItem('studentID') || 'demo-student';
+            let progress = loadProgressQuiz();
+            if(!progress) progress = initializeProgressQuiz();
+            progress.quizzesAttempted = (progress.quizzesAttempted || 0) + 1;
+            progress.totalQuestions = (progress.totalQuestions || 0) + (total || 0);
+            progress.correctAnswers = (progress.correctAnswers || 0) + (correct || 0);
+            if(!progress.subjectStats) progress.subjectStats = {Physics:{attempts:0,correct:0},Maths:{attempts:0,correct:0},Chemistry:{attempts:0,correct:0},Biology:{attempts:0,correct:0}};
+            if(!progress.subjectStats[subject]) progress.subjectStats[subject] = {attempts:0, correct:0};
+            progress.subjectStats[subject].attempts += (total || 0);
+            progress.subjectStats[subject].correct += (correct || 0);
+            saveProgressQuiz(progress);
+            return progress;
+        }
+
         // INIT
         document.addEventListener('DOMContentLoaded', function() {
             const params = new URLSearchParams(window.location.search);
@@ -731,10 +783,8 @@
             const weakHTML = weakCount > 0 ? `<span class="weak-topic-tag">⚠️ ${weakCount} weak area(s) detected in ${currentTopic}</span>` : '<span style="color: #28a745; font-weight: 700;">✅ Great job! No major weak areas.</span>';
             document.getElementById('finalWeakTopics').innerHTML = weakHTML;
 
-            // Update progress (if function exists from dashboard)
-            if(typeof updateProgress === 'function'){
-                updateProgress(currentSubject, totalScore, currentQuestions.length);
-            }
+            // Update progress tracking
+            updateProgressQuiz(currentSubject, totalScore, currentQuestions.length);
 
             // Store attempt
             const attempt = {

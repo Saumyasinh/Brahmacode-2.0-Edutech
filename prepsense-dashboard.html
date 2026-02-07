@@ -631,6 +631,75 @@
             color: #4caf50;
         }
 
+        /* EMPTY STATE */
+        .empty-state-container {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--background-cream) 0%, #fcf8f0 100%);
+            z-index: 10;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .empty-state-container.active {
+            display: flex;
+        }
+
+        .empty-state-card {
+            background: var(--white);
+            border-radius: 24px;
+            padding: 50px 40px;
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 12px 48px rgba(18, 44, 79, 0.15);
+        }
+
+        .empty-state-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .empty-state-card h2 {
+            font-size: 28px;
+            color: var(--primary-dark);
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .empty-state-card p {
+            color: #7a8290;
+            font-size: 15px;
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        .empty-state-btn {
+            background: linear-gradient(135deg, var(--accent-yellow) 0%, #f5c61a 100%);
+            color: var(--primary-dark);
+            padding: 14px 32px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(240, 214, 55, 0.3);
+        }
+
+        .empty-state-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(240, 214, 55, 0.4);
+        }
+
+        .dashboard.hidden-for-empty {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
         /* RESPONSIVE DESIGN */
         @media (max-width: 1200px) {
             .dashboard-grid {
@@ -909,6 +978,16 @@
                 </div>
             </header>
 
+            <!-- EMPTY STATE OVERLAY -->
+            <div class="empty-state-container">
+                <div class="empty-state-card">
+                    <span class="empty-state-icon">📊</span>
+                    <h2>No learning data yet</h2>
+                    <p>Start your first quiz to see your performance analytics</p>
+                    <button class="empty-state-btn" onclick="goToPractice()">Start Practice</button>
+                </div>
+            </div>
+
             <!-- DASHBOARD CONTENT -->
             <div class="dashboard">
                 <!-- WELCOME HERO CARD -->
@@ -1113,6 +1192,18 @@
             const totalQuestions = progress.totalQuestions || 0;
             const correctAnswers = progress.correctAnswers || 0;
 
+            // Show empty state if no quizzes attempted
+            const emptyStateContainer = document.querySelector('.empty-state-container');
+            const dashboard = document.querySelector('.dashboard');
+            if(quizzesAttempted === 0){
+                if(emptyStateContainer) emptyStateContainer.classList.add('active');
+                if(dashboard) dashboard.classList.add('hidden-for-empty');
+                return;
+            }else{
+                if(emptyStateContainer) emptyStateContainer.classList.remove('active');
+                if(dashboard) dashboard.classList.remove('hidden-for-empty');
+            }
+
             const accuracy = totalQuestions ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
 
             let weakest = 'No Data Yet';
@@ -1132,13 +1223,13 @@
             const predicted = Math.round(accuracy / 2);
 
             const qEl = document.getElementById('questions-value'); if(qEl) qEl.textContent = (totalQuestions || 0).toLocaleString();
-            const aEl = document.getElementById('accuracy-value'); if(aEl) aEl.textContent = (quizzesAttempted ? accuracy + '%' : 'No Data Yet');
+            const aEl = document.getElementById('accuracy-value'); if(aEl) aEl.textContent = accuracy + '%';
             const wEl = document.getElementById('weakest-subject'); if(wEl) wEl.textContent = weakest;
-            const pEl = document.getElementById('predicted-score'); if(pEl) pEl.textContent = (quizzesAttempted ? (predicted + '/50') : 'No Data Yet');
-            const bar = document.querySelector('.progress-bar'); if(bar) bar.style.width = (quizzesAttempted ? Math.min(100, Math.round((predicted/50)*100)) + '%' : '0%');
-            const readEl = document.getElementById('readiness-percentage'); if(readEl) readEl.textContent = (quizzesAttempted ? String(accuracy) : '0') + '%';
+            const pEl = document.getElementById('predicted-score'); if(pEl) pEl.textContent = predicted + '/50';
+            const bar = document.querySelector('.progress-bar'); if(bar) bar.style.width = Math.min(100, Math.round((predicted/50)*100)) + '%';
+            const readEl = document.getElementById('readiness-percentage'); if(readEl) readEl.textContent = String(accuracy) + '%';
 
-            const degrees = (parseInt(quizzesAttempted ? accuracy : 0,10) / 100) * 360;
+            const degrees = (parseInt(accuracy,10) / 100) * 360;
             const progressCircle = document.querySelector('.progress-circle');
             if(progressCircle) progressCircle.style.background = `conic-gradient(var(--accent-yellow) 0deg, var(--accent-yellow) ${degrees}deg, #e5e5e5 ${degrees}deg, #e5e5e5 360deg)`;
         }
@@ -1241,8 +1332,7 @@
         function escapeHtml(str){ return String(str||'').replace(/[&<>"']/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"})[ch]); }
 
         function goToPractice(){
-            const target = 'practice.html';
-            fetch(target,{method:'HEAD'}).then(()=>{ location.href = target; }).catch(()=>{ alert('Practice page not available.'); });
+            window.location.href = 'quiz.html?subject=Physics';
         }
 
         function handleNavClick(event) {
