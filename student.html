@@ -160,6 +160,9 @@
 
             if (account) {
                 // Store current user session with full name
+                localStorage.setItem('role', 'student');
+                localStorage.setItem('studentID', studentId);
+                localStorage.setItem('studentName', account.fullName);
                 localStorage.setItem('currentUser', JSON.stringify({ role: 'student', studentId: studentId, fullName: account.fullName }));
                 window.location.href = 'prepsense-dashboard.html';
             } else {
@@ -204,6 +207,9 @@
             localStorage.setItem('studentAccounts', JSON.stringify(studentAccounts));
 
             // Auto-login after signup
+            localStorage.setItem('role', 'student');
+            localStorage.setItem('studentID', studentId);
+            localStorage.setItem('studentName', fullName);
             localStorage.setItem('currentUser', JSON.stringify({ role: 'student', studentId: studentId, fullName: fullName }));
             window.location.href = 'prepsense-dashboard.html';
         }
