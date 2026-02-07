@@ -1,2122 +1,1131 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PrepSense AI - Exam Readiness Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        /* ============================================
-           RESET & BASE STYLES
-           ============================================ */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary-dark: #122C4F;
-            --background-cream: #FBF9E3;
-            --accent-yellow: #F0D637;
-            --accent-blue: #5B88B2;
-            --white: #FFFFFF;
-            --light-gray: #F5F3ED;
-            --shadow-sm: 0 2px 8px rgba(18, 44, 79, 0.08);
-            --shadow-md: 0 4px 16px rgba(18, 44, 79, 0.12);
-            --shadow-lg: 0 8px 24px rgba(18, 44, 79, 0.15);
-            --border-radius: 16px;
-            --transition: all 0.3s ease;
-        }
-
-        /* PAGE TRANSITION ANIMATION */
-        @keyframes fadeOut {
-            from { opacity: 1; }
-            to { opacity: 0; }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .page-transition-overlay {
-            position: fixed;
-            inset: 0;
-            background: var(--background-cream);
-            z-index: 9999;
-            pointer-events: none;
-            opacity: 0;
-        }
-
-        .page-transition-overlay.fade-out {
-            animation: fadeOut 0.6s ease-out forwards;
-        }
-
-        .page-transition-overlay.fade-in {
-            animation: fadeIn 0.4s ease-in forwards;
-            pointer-events: auto;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--background-cream);
-            color: var(--primary-dark);
-            line-height: 1.6;
-        }
-
-        /* ============================================
-           LAYOUT STRUCTURE
-           ============================================ */
-        .container {
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* LEFT SIDEBAR */
-        .sidebar {
-            width: 250px;
-            background: linear-gradient(180deg, var(--primary-dark) 0%, #0f1f37 100%);
-            padding: 30px 20px;
-            display: flex;
-            flex-direction: column;
-            box-shadow: var(--shadow-lg);
-            overflow-y: auto;
-        }
-
-        .sidebar-brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 40px;
-            color: var(--accent-yellow);
-            font-weight: 700;
-            font-size: 16px;
-            padding: 12px 0;
-        }
-
-        .sidebar-brand-icon {
-            width: 32px;
-            height: 32px;
-            background: var(--accent-yellow);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--primary-dark);
-            font-weight: bold;
-            font-size: 18px;
-        }
-
-        .nav-menu {
-            list-style: none;
-            flex: 1;
-        }
-
-        .nav-item {
-            margin-bottom: 15px;
-        }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 13px 16px;
-            color: #a8b8cc;
-            text-decoration: none;
-            border-radius: 12px;
-            transition: var(--transition);
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .nav-link:hover {
-            background-color: rgba(240, 214, 55, 0.1);
-            color: var(--accent-yellow);
-        }
-
-        .nav-link.active {
-            background-color: var(--accent-yellow);
-            color: var(--primary-dark);
-            font-weight: 600;
-        }
-
-        .nav-icon {
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-        }
-
-        .logout-btn {
-            margin-top: auto;
-            background-color: rgba(240, 214, 55, 0.15);
-        }
-
-        .logout-btn:hover {
-            background-color: rgba(240, 214, 55, 0.25);
-        }
-
-        /* DROPDOWN STYLES */
-        .dropdown-item {
-            position: relative;
-        }
-
-        .dropdown-arrow {
-            margin-left: auto;
-            transition: transform 0.3s ease;
-            display: inline-block;
-        }
-
-        .dropdown-arrow.rotate {
-            transform: rotate(180deg);
-        }
-
-        .subject-submenu {
-            list-style: none;
-            display: none;
-            flex-direction: column;
-            gap: 0;
-            margin-top: 0;
-            padding: 8px 0;
-            background-color: rgba(18, 44, 79, 0.05);
-            border-radius: 8px;
-            margin: 5px 0 0 0;
-        }
-
-        .subject-submenu.show {
-            display: flex;
-        }
-
-        .submenu-item {
-            padding: 12px 16px 12px 40px;
-            color: #a8b8cc;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 14px;
-            font-weight: 500;
-            border-radius: 6px;
-            margin: 2px 8px;
-        }
-
-        .submenu-item:hover {
-            background-color: var(--accent-yellow);
-            color: var(--primary-dark);
-            font-weight: 600;
-        }
-
-        /* MAIN CONTENT AREA */
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-        }
-
-        /* TOP HEADER (NAV BAR) */
-        .header {
-            background-color: var(--white);
-            padding: 16px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: var(--shadow-sm);
-            border-bottom: 1px solid rgba(18, 44, 79, 0.05);
-        }
-
-        .header-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--primary-dark);
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 25px;
-        }
-
-        .exam-readiness-badge {
-            background: linear-gradient(135deg, var(--accent-yellow) 0%, #f5c61a 100%);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--primary-dark);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .badge-indicator {
-            width: 8px;
-            height: 8px;
-            background-color: var(--primary-dark);
-            border-radius: 50%;
-            display: inline-block;
-        }
-
-        .notification-bell {
-            width: 40px;
-            height: 40px;
-            background-color: var(--light-gray);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 20px;
-            position: relative;
-        }
-
-        .notification-bell:hover {
-            background-color: var(--accent-yellow);
-            color: var(--primary-dark);
-        }
-
-        .notification-dot {
-            width: 10px;
-            height: 10px;
-            background-color: #ff6b6b;
-            border-radius: 50%;
-            position: absolute;
-            top: 8px;
-            right: 8px;
-        }
-
-        .student-profile {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .student-avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-yellow) 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--white);
-            font-weight: 700;
-            font-size: 18px;
-            box-shadow: var(--shadow-md);
-        }
-
-        .student-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .student-name {
-            font-weight: 600;
-            color: var(--primary-dark);
-            font-size: 14px;
-        }
-
-        .student-role {
-            font-size: 12px;
-            color: #7a8290;
-        }
-
-        /* DASHBOARD CONTENT */
-        .dashboard {
-            padding: 30px;
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        /* WELCOME HERO CARD */
-        .welcome-card {
-            background: linear-gradient(135deg, var(--accent-blue) 0%, #7fa8d1 100%);
-            padding: 40px;
-            border-radius: var(--border-radius);
-            color: var(--white);
-            margin-bottom: 30px;
-            box-shadow: var(--shadow-lg);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .welcome-content h1 {
-            font-size: 32px;
-            margin-bottom: 10px;
-            font-weight: 700;
-        }
-
-        .welcome-content p {
-            font-size: 16px;
-            opacity: 0.95;
-            margin-bottom: 20px;
-        }
-
-        .btn {
-            padding: 12px 28px;
-            border: none;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-block;
-            text-decoration: none;
-        }
-
-        .btn-primary {
-            background-color: var(--accent-yellow);
-            color: var(--primary-dark);
-        }
-
-        .btn-primary:hover {
-            background-color: #f5c61a;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(240, 214, 55, 0.3);
-        }
-
-        .welcome-decoration {
-            width: 150px;
-            height: 150px;
-            background-color: rgba(255, 255, 255, 0.15);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 60px;
-        }
-
-        /* CONTENT GRID */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px;
-            margin-bottom: 30px;
-        }
-
-        .left-column {
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-        }
-
-        .right-column {
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-        }
-
-        /* EXAM READINESS CARD */
-        .exam-readiness-card {
-            background: var(--white);
-            padding: 35px 30px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-md);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-
-        .circular-progress-container {
-            position: relative;
-            width: 180px;
-            height: 180px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .circular-progress {
-            position: relative;
-            width: 180px;
-            height: 180px;
-        }
-
-        .progress-circle {
-            width: 100%;
-            height: 100%;
-            background: conic-gradient(
-                var(--accent-yellow) 0deg,
-                var(--accent-yellow) calc(68 * 3.6deg),
-                #e5e5e5 calc(68 * 3.6deg),
-                #e5e5e5 360deg
-            );
-            border-radius: 50%;
-            box-shadow: inset 0 0 0 8px var(--white);
-        }
-
-        .progress-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-        }
-
-        .progress-percentage {
-            font-size: 42px;
-            font-weight: 700;
-            color: var(--accent-yellow);
-        }
-
-        .progress-label {
-            font-size: 12px;
-            color: #7a8290;
-            margin-top: 4px;
-        }
-
-        .readiness-status {
-            background: linear-gradient(135deg, rgba(240, 214, 55, 0.15) 0%, rgba(91, 136, 178, 0.1) 100%);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            color: #d97706;
-            margin-bottom: 12px;
-            display: inline-block;
-        }
-
-        .readiness-helper {
-            font-size: 13px;
-            color: #7a8290;
-            margin-top: 15px;
-        }
-
-        /* AI INSIGHT CARD */
-        .ai-insight-card {
-            background: linear-gradient(135deg, #122C4F 0%, #1a3a5f 100%);
-            color: white;
-            padding: 28px 30px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-md);
-            display: flex;
-            align-items: flex-start;
-            gap: 20px;
-            grid-column: 1 / -1;
-            margin-top: 10px;
-        }
-
-        .ai-insight-icon {
-            font-size: 40px;
-            flex-shrink: 0;
-            line-height: 1;
-        }
-
-        .ai-insight-content {
-            flex: 1;
-        }
-
-        .ai-insight-title {
-            font-size: 14px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #F0D637;
-            margin-bottom: 12px;
-        }
-
-        .ai-insight-text {
-            font-size: 15px;
-            line-height: 1.6;
-            color: rgba(255, 255, 255, 0.95);
-            margin-bottom: 16px;
-        }
-
-        .ai-insight-action {
-            display: inline-block;
-            background: #F0D637;
-            color: #122C4F;
-            padding: 10px 18px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            text-decoration: none;
-            cursor: pointer;
-            border: none;
-            transition: all 0.3s ease;
-        }
-
-        .ai-insight-action:hover {
-            background: #f5e34a;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(240, 214, 55, 0.3);
-        }
-
-        /* STATISTICS CARDS */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .stat-card {
-            background: var(--white);
-            padding: 25px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-md);
-            transition: var(--transition);
-            border-left: 4px solid var(--accent-yellow);
-        }
-
-        .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .stat-card.accent-blue {
-            border-left-color: var(--accent-blue);
-        }
-
-        .stat-card.accent-yellow {
-            border-left-color: var(--accent-yellow);
-        }
-
-        .stat-card.accent-orange {
-            border-left-color: #ff9a56;
-        }
-
-        .stat-card.accent-red {
-            border-left-color: #ff6b6b;
-        }
-
-        .stat-icon {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, rgba(240, 214, 55, 0.15) 0%, rgba(240, 214, 55, 0.05) 100%);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            margin-bottom: 12px;
-        }
-
-        .stat-card.accent-blue .stat-icon {
-            background: linear-gradient(135deg, rgba(91, 136, 178, 0.15) 0%, rgba(91, 136, 178, 0.05) 100%);
-        }
-
-        .stat-card.accent-orange .stat-icon {
-            background: linear-gradient(135deg, rgba(255, 154, 86, 0.15) 0%, rgba(255, 154, 86, 0.05) 100%);
-        }
-
-        .stat-card.accent-red .stat-icon {
-            background: linear-gradient(135deg, rgba(255, 107, 107, 0.15) 0%, rgba(255, 107, 107, 0.05) 100%);
-        }
-
-        .stat-label {
-            font-size: 13px;
-            color: #7a8290;
-            font-weight: 500;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .stat-value {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--primary-dark);
-            margin-bottom: 12px;
-        }
-
-        .progress-bar-container {
-            width: 100%;
-            height: 6px;
-            background-color: #e5e5e5;
-            border-radius: 3px;
-            overflow: hidden;
-            margin-top: 8px;
-        }
-
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, var(--accent-yellow) 0%, #f5c61a 100%);
-            border-radius: 3px;
-            transition: width 0.6s ease;
-        }
-
-        /* RECENT ATTEMPTS TABLE */
-        .recent-attempts {
-            background: var(--white);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-md);
-            padding: 30px;
-            grid-column: 1 / -1;
-        }
-
-        .recent-attempts h2 {
-            font-size: 18px;
-            color: var(--primary-dark);
-            margin-bottom: 20px;
-            font-weight: 700;
-        }
-
-        .table-wrapper {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        table thead {
-            background-color: var(--light-gray);
-        }
-
-        table th {
-            padding: 14px 16px;
-            text-align: left;
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--primary-dark);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border: none;
-        }
-
-        table td {
-            padding: 14px 16px;
-            border-bottom: 1px solid #f0f0f0;
-            font-size: 14px;
-            color: var(--primary-dark);
-        }
-
-        table tbody tr {
-            transition: var(--transition);
-        }
-
-        table tbody tr:hover {
-            background-color: #fdfbf5;
-        }
-
-        .score-cell {
-            font-weight: 600;
-            color: var(--accent-yellow);
-        }
-
-        .tag {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-            margin-left: 8px;
-        }
-
-        .tag.weak {
-            background-color: rgba(255, 107, 107, 0.15);
-            color: #ff6b6b;
-        }
-
-        .tag.excellent {
-            background-color: rgba(76, 175, 80, 0.15);
-            color: #4caf50;
-        }
-
-        /* ACTIVITY TIMELINE */
-        .timeline-section {
-            grid-column: 1 / -1;
-            background: var(--white);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-md);
-            padding: 30px;
-            margin-top: 20px;
-        }
-
-        .timeline-section h2 {
-            font-size: 18px;
-            color: var(--primary-dark);
-            margin-bottom: 30px;
-            font-weight: 700;
-        }
-
-        .timeline-list {
-            position: relative;
-            padding-left: 40px;
-        }
-
-        .timeline-list::before {
-            content: '';
-            position: absolute;
-            left: 8px;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: linear-gradient(180deg, #F0D637 0%, rgba(240, 214, 55, 0.2) 100%);
-        }
-
-        .timeline-item {
-            position: relative;
-            margin-bottom: 24px;
-            padding-bottom: 8px;
-        }
-
-        .timeline-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .timeline-marker {
-            position: absolute;
-            left: -32px;
-            top: 2px;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: var(--white);
-            border: 3px solid #F0D637;
-            z-index: 2;
-        }
-
-        .timeline-marker.excellent {
-            border-color: #4caf50;
-        }
-
-        .timeline-marker.good {
-            border-color: #5B88B2;
-        }
-
-        .timeline-marker.weak {
-            border-color: #ff6b6b;
-        }
-
-        .timeline-content {
-            background: var(--light-gray);
-            border-radius: 12px;
-            padding: 16px 18px;
-            border-left: 3px solid #F0D637;
-        }
-
-        .timeline-content.excellent {
-            border-left-color: #4caf50;
-            background: rgba(76, 175, 80, 0.08);
-        }
-
-        .timeline-content.good {
-            border-left-color: #5B88B2;
-            background: rgba(91, 136, 178, 0.08);
-        }
-
-        .timeline-content.weak {
-            border-left-color: #ff6b6b;
-            background: rgba(255, 107, 107, 0.08);
-        }
-
-        .timeline-text {
-            font-size: 14px;
-            color: var(--primary-dark);
-            font-weight: 500;
-            line-height: 1.5;
-        }
-
-        .timeline-text .score {
-            font-weight: 700;
-            color: var(--accent-yellow);
-        }
-
-        .timeline-text .date {
-            font-size: 12px;
-            color: #7a8290;
-            margin-top: 6px;
-            display: block;
-        }
-
-        @media (max-width: 768px) {
-            .timeline-section {
-                padding: 20px;
-            }
-
-            .timeline-list {
-                padding-left: 30px;
-            }
-
-            .timeline-marker {
-                left: -24px;
-            }
-        }
-
-        /* EMPTY STATE */
-        .empty-state-container {
-            display: none;
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, var(--background-cream) 0%, #fcf8f0 100%);
-            z-index: 10;
-            align-items: center;
-            justify-content: center;
-            padding: 40px 20px;
-        }
-
-        .empty-state-container.active {
-            display: flex;
-        }
-
-        .empty-state-card {
-            background: var(--white);
-            border-radius: 24px;
-            padding: 50px 40px;
-            max-width: 450px;
-            width: 100%;
-            text-align: center;
-            box-shadow: 0 12px 48px rgba(18, 44, 79, 0.15);
-        }
-
-        .empty-state-icon {
-            font-size: 80px;
-            margin-bottom: 20px;
-            display: block;
-        }
-
-        .empty-state-card h2 {
-            font-size: 28px;
-            color: var(--primary-dark);
-            margin-bottom: 12px;
-            font-weight: 700;
-        }
-
-        .empty-state-card p {
-            color: #7a8290;
-            font-size: 15px;
-            margin-bottom: 32px;
-            line-height: 1.6;
-        }
-
-        .empty-state-btn {
-            background: linear-gradient(135deg, var(--accent-yellow) 0%, #f5c61a 100%);
-            color: var(--primary-dark);
-            padding: 14px 32px;
-            border: none;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 12px rgba(240, 214, 55, 0.3);
-        }
-
-        .empty-state-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(240, 214, 55, 0.4);
-        }
-
-        .dashboard.hidden-for-empty {
-            opacity: 0.4;
-            pointer-events: none;
-        }
-
-        /* ANALYTICS CHARTS */
-        .analytics-section {
-            grid-column: 1 / -1;
-            background: var(--white);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-md);
-            padding: 30px;
-            margin-top: 20px;
-        }
-
-        .analytics-section h2 {
-            font-size: 18px;
-            color: var(--primary-dark);
-            margin-bottom: 30px;
-            font-weight: 700;
-        }
-
-        .charts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-bottom: 20px;
-        }
-
-        .chart-container {
-            background: var(--light-gray);
-            border-radius: 12px;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 300px;
-            position: relative;
-        }
-
-        .chart-canvas {
-            max-height: 280px;
-            width: 100%;
-        }
-
-        .chart-title {
-            position: absolute;
-            top: 15px;
-            left: 20px;
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--primary-dark);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        @media (max-width: 1024px) {
-            .charts-grid {
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                gap: 20px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .charts-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* RESPONSIVE DESIGN */
-        @media (max-width: 1200px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .welcome-card {
-                flex-direction: column;
-                text-align: center;
-                gap: 20px;
-            }
-
-            .welcome-decoration {
-                display: none;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-            }
-
-            .sidebar {
-                width: 100%;
-                padding: 15px;
-                flex-direction: row;
-                height: auto;
-            }
-
-            .sidebar-brand {
-                margin-bottom: 0;
-            }
-
-            .nav-menu {
-                display: flex;
-                gap: 10px;
-                flex: 1;
-                margin: 0 20px;
-            }
-
-            .nav-item {
-                margin-bottom: 0;
-            }
-
-            .nav-link {
-                padding: 10px 12px;
-                font-size: 12px;
-            }
-
-            .nav-icon {
-                width: 16px;
-                height: 16px;
-                font-size: 14px;
-            }
-
-            .logout-btn {
-                margin-top: 0;
-                margin-left: auto;
-            }
-
-            .dashboard {
-                padding: 20px;
-            }
-
-            .header {
-                flex-wrap: wrap;
-                gap: 15px;
-                padding: 12px 20px;
-            }
-
-            .header-right {
-                width: 100%;
-                justify-content: space-between;
-                gap: 15px;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .welcome-card {
-                padding: 25px;
-            }
-
-            .welcome-content h1 {
-                font-size: 24px;
-            }
-
-            .circular-progress-container {
-                width: 140px;
-                height: 140px;
-            }
-
-            .progress-circle {
-                width: 140px;
-                height: 140px;
-            }
-
-            .progress-percentage {
-                font-size: 32px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .sidebar {
-                padding: 10px;
-                overflow-x: auto;
-            }
-
-            .nav-menu {
-                gap: 5px;
-            }
-
-            .nav-link {
-                padding: 8px 10px;
-                gap: 8px;
-            }
-
-            .header {
-                padding: 10px 15px;
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .header-right {
-                width: 100%;
-                justify-content: flex-start;
-                gap: 10px;
-            }
-
-            .student-profile {
-                width: 100%;
-            }
-
-            .dashboard {
-                padding: 15px;
-            }
-
-            .welcome-card {
-                padding: 20px;
-                border-radius: 12px;
-            }
-
-            .welcome-content h1 {
-                font-size: 20px;
-            }
-
-            .welcome-content p {
-                font-size: 14px;
-            }
-
-            .exam-readiness-card {
-                padding: 20px;
-            }
-
-            .stat-card {
-                padding: 18px;
-            }
-
-            .stat-value {
-                font-size: 24px;
-            }
-
-            table {
-                font-size: 12px;
-            }
-
-            table th,
-            table td {
-                padding: 10px 8px;
-            }
-        }
-
-        /* SCROLLBAR STYLING */
-        ::-webkit-scrollbar {
-            width: 10px;
-            height: 10px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--accent-yellow);
-            border-radius: 5px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #f5c61a;
-        }
-
-        /* LOADING OVERLAY */
-        .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(18, 44, 79, 0.85); z-index: 99999; align-items: center; justify-content: center; }
-        .loading-overlay.active { display: flex; }
-        .spinner { width: 60px; height: 60px; border: 5px solid rgba(255, 255, 255, 0.2); border-top: 5px solid #F0D637; border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .loading-text { position: absolute; bottom: 50px; color: white; font-size: 14px; font-weight: 600; text-align: center; }
-
-        /* RESPONSIVE AI INSIGHT CARD */
-        @media (max-width: 768px) {
-            .ai-insight-card {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-                gap: 15px;
-            }
-
-            .ai-insight-text {
-                font-size: 14px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PrepSense - Student Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f7fa;
+      color: #1a1a1a;
+    }
+
+    .app-container {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 280px;
+      background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
+      color: white;
+      padding: 24px;
+      overflow-y: auto;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .logo {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 40px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: #ffd700;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      color: #1e3c72;
+    }
+
+    .student-info {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 32px;
+      backdrop-filter: blur(10px);
+    }
+
+    .student-name {
+      font-weight: 600;
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+
+    .student-class {
+      font-size: 13px;
+      opacity: 0.8;
+    }
+
+    .nav-section {
+      margin-bottom: 32px;
+    }
+
+    .nav-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      opacity: 0.6;
+      margin-bottom: 12px;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-button {
+      width: 100%;
+      padding: 12px 16px;
+      background: transparent;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: left;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-button:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateX(4px);
+    }
+
+    .nav-button.active {
+      background: rgba(255, 255, 255, 0.25);
+      font-weight: 600;
+    }
+
+    .nav-button.active::left {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: #ffd700;
+    }
+
+    .reset-btn {
+      width: 100%;
+      padding: 12px 16px;
+      background: #ff6b6b;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-top: auto;
+      transition: all 0.3s ease;
+    }
+
+    .reset-btn:hover {
+      background: #ff5252;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+    }
+
+    /* MAIN CONTENT */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .top-bar {
+      background: white;
+      padding: 20px 32px;
+      border-bottom: 1px solid #e0e6ed;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+
+    .take-quiz-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .take-quiz-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .content-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px;
+    }
+
+    .view {
+      display: none;
+    }
+
+    .view.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* CARDS */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      transform: translateY(-4px);
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: #6c757d;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 8px;
+    }
+
+    .stat-detail {
+      font-size: 12px;
+      color: #6c757d;
+    }
+
+    .stat-card.accent-1 {
+      border-top: 4px solid #667eea;
+    }
+
+    .stat-card.accent-2 {
+      border-top: 4px solid #764ba2;
+    }
+
+    .stat-card.accent-3 {
+      border-top: 4px solid #f093fb;
+    }
+
+    .stat-card.accent-4 {
+      border-top: 4px solid #4facfe;
+    }
+
+    /* CHARTS */
+    .charts-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .chart-card {
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .chart-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #1a1a1a;
+    }
+
+    canvas {
+      max-width: 100% !important;
+      height: 280px !important;
+    }
+
+    /* LISTS */
+    .list-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .list-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+    }
+
+    .list-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid #e0e6ed;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .list-items {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .list-item {
+      padding: 16px 24px;
+      border-bottom: 1px solid #f0f2f5;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+
+    .list-item:last-child {
+      border-bottom: none;
+    }
+
+    .list-item:hover {
+      background: #f8f9fc;
+    }
+
+    .item-left {
+      flex: 1;
+    }
+
+    .item-title {
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 4px;
+    }
+
+    .item-meta {
+      font-size: 12px;
+      color: #6c757d;
+    }
+
+    .item-stats {
+      text-align: right;
+    }
+
+    .item-score {
+      font-size: 18px;
+      font-weight: 700;
+      color: #667eea;
+    }
+
+    .item-btn {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .item-btn:hover {
+      background: #764ba2;
+      transform: scale(1.05);
+    }
+
+    /* TIMELINE */
+    .timeline-item {
+      padding: 16px 0;
+      border-left: 2px solid #e0e6ed;
+      padding-left: 16px;
+      margin-left: 8px;
+      position: relative;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -8px;
+      top: 8px;
+      width: 12px;
+      height: 12px;
+      background: #667eea;
+      border-radius: 50%;
+      border: 3px solid white;
+    }
+
+    .timeline-title {
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 4px;
+    }
+
+    .timeline-meta {
+      font-size: 12px;
+      color: #6c757d;
+    }
+
+    /* LOADER */
+    .loader {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .loader.active {
+      display: flex;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+
+    @media (max-width: 1024px) {
+      .app-container {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        overflow-x: auto;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .charts-row {
+        grid-template-columns: 1fr;
+      }
+
+      .list-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <!-- ============================================
-             LEFT SIDEBAR NAVIGATION
-             ============================================ -->
-        <aside class="sidebar">
-            <div class="sidebar-brand">
-                <div class="sidebar-brand-icon">P</div>
-                <span>PrepSense</span>
-            </div>
+  <div class="loader" id="loader">
+    <div class="spinner"></div>
+  </div>
 
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a class="nav-link active" onclick="handleNavClick(event)">
-                        <span class="nav-icon">🏠</span>
-                        <span>Home</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" onclick="toggleSubjectDropdown(event)">
-                        <span class="nav-icon">📝</span>
-                        <span>Practice Quiz</span>
-                        <span class="dropdown-arrow">▼</span>
-                    </a>
-                    <ul class="subject-submenu" id="subjectDropdown">
-                        <li class="submenu-item" onclick="selectSubject('Physics')">Physics</li>
-                        <li class="submenu-item" onclick="selectSubject('Maths')">Maths</li>
-                        <li class="submenu-item" onclick="selectSubject('Chemistry')">Chemistry</li>
-                        <li class="submenu-item" onclick="selectSubject('Biology')">Biology</li>
-                    </ul>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/progress-report.html" onclick="handleNavClick(event)">
-                        <span class="nav-icon">📊</span>
-                        <span>Progress Report</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="handleNavigation('weak-topics.html')">
-                        <span class="nav-icon">⚠️</span>
-                        <span>Weak Topics</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="handleNavigation('study-plan.html')">
-                        <span class="nav-icon">📚</span>
-                        <span>Study Plan & History</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="handleNavigation('student-profile.html')">
-                        <span class="nav-icon">👤</span>
-                        <span>Profile</span>
-                    </a>
-                </li>
-            </ul>
+  <div class="app-container">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="logo">
+        <div class="logo-icon">📊</div>
+        <span>PrepSense</span>
+      </div>
 
-            <a class="nav-link logout-btn" onclick="handleLogout(event)">
-                <span class="nav-icon">🚪</span>
-                <span>Logout</span>
-            </a>
-        </aside>
+      <div class="student-info">
+        <div class="student-name" id="studentName">John Doe</div>
+        <div class="student-class" id="studentClass">Class 10 • Central High School</div>
+      </div>
 
-        <!-- ============================================
-             MAIN CONTENT AREA
-             ============================================ -->
-        <div class="main-content">
-            <!-- TOP HEADER / NAV BAR -->
-            <header class="header">
-                <div class="header-title">Dashboard</div>
-                <div class="header-right">
-                    <div class="exam-readiness-badge">
-                        <span class="badge-indicator"></span>
-                        <span>Exam Readiness: <span id="badge-readiness">68</span>%</span>
-                    </div>
+      <div class="nav-section">
+        <div class="nav-label">Main</div>
+        <button class="nav-button active" data-view="dashboard">📈 Dashboard</button>
+        <button class="nav-button" data-view="quizzes">📝 All Quizzes</button>
+        <button class="nav-button" data-view="performance">📊 Performance</button>
+        <button class="nav-button" data-view="topics">🎯 Topics</button>
+      </div>
 
-                    <div class="notification-bell">
-                        🔔
-                        <span class="notification-dot"></span>
-                    </div>
+      <div class="nav-section">
+        <div class="nav-label">Account</div>
+        <button class="nav-button" data-view="profile">👤 Profile</button>
+        <button class="nav-button" data-view="settings">⚙️ Settings</button>
+      </div>
 
-                    <div class="student-profile">
-                        <div class="student-avatar">AP</div>
-                        <div class="student-info">
-                            <div class="student-name">Aryan Patel</div>
-                            <div class="student-role">Student</div>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            <!-- EMPTY STATE OVERLAY -->
-            <div class="empty-state-container">
-                <div class="empty-state-card">
-                    <span class="empty-state-icon">📊</span>
-                    <h2>No learning data yet</h2>
-                    <p>Start your first quiz to see your performance analytics</p>
-                    <button class="empty-state-btn" onclick="goToPractice()">Start Practice</button>
-                </div>
-            </div>
-
-            <!-- DASHBOARD CONTENT -->
-            <div class="dashboard">
-                <!-- WELCOME HERO CARD -->
-                <div class="welcome-card">
-                    <div class="welcome-content">
-                        <h1>Welcome back, Aryan!</h1>
-                        <p>Ready for your next quiz?</p>
-                        <button class="btn btn-primary">Continue Practice</button>
-                    </div>
-                    <div class="welcome-decoration">🎯</div>
-                </div>
-
-                <!-- MAIN GRID LAYOUT -->
-                <div class="dashboard-grid">
-                    <!-- LEFT COLUMN: STATISTICS -->
-                    <div class="left-column">
-                        <!-- STATISTICS GRID (4 CARDS) -->
-                        <div class="stats-grid">
-                            <!-- Card 1: Questions Practiced -->
-                            <div class="stat-card accent-yellow">
-                                <div class="stat-icon">📚</div>
-                                <div class="stat-label">Questions Practiced</div>
-                                <div class="stat-value" id="questions-value">1250</div>
-                            </div>
-
-                            <!-- Card 2: Overall Accuracy -->
-                            <div class="stat-card accent-blue">
-                                <div class="stat-icon">✅</div>
-                                <div class="stat-label">Overall Accuracy</div>
-                                <div class="stat-value" id="accuracy-value">85%</div>
-                            </div>
-
-                            <!-- Card 3: Weakest Subject -->
-                            <div class="stat-card accent-orange">
-                                <div class="stat-icon">📖</div>
-                                <div class="stat-label">Weakest Subject</div>
-                                <div class="stat-value" id="weakest-subject" style="font-size: 20px;">Physics</div>
-                            </div>
-
-                            <!-- Card 4: Predicted Score -->
-                            <div class="stat-card accent-red">
-                                <div class="stat-icon">🎯</div>
-                                <div class="stat-label">Predicted Score</div>
-                                <div class="stat-value" id="predicted-score">32/50</div>
-                                <div class="progress-bar-container">
-                                    <div class="progress-bar" style="width: 64%;"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- RIGHT COLUMN: EXAM READINESS -->
-                    <div class="right-column">
-                        <div id="rightContent">
-                          <!-- EXAM READINESS CARD (default content) -->
-                          <div class="exam-readiness-card">
-                              <div class="circular-progress-container">
-                                  <div class="circular-progress">
-                                      <div class="progress-circle"></div>
-                                      <div class="progress-text">
-                                          <div class="progress-percentage" id="readiness-percentage">68%</div>
-                                          <div class="progress-label">Exam Readiness</div>
-                                      </div>
-                                  </div>
-                              </div>
-
-                              <div class="readiness-status">⚠️ Needs Revision</div>
-                              <div class="readiness-helper">Reach 80% to be ready!</div>
-                          </div>
-                        </div>
-                    </div>
-
-                    <!-- AI INSIGHT CARD (FULL WIDTH) -->
-                    <div class="ai-insight-card" id="aiInsightCard">
-                        <div class="ai-insight-icon">💡</div>
-                        <div class="ai-insight-content">
-                            <div class="ai-insight-title">AI Insight</div>
-                            <div class="ai-insight-text" id="aiInsightText">Begin your learning journey by taking your first quiz to unlock personalized insights.</div>
-                            <button class="ai-insight-action" onclick="selectSubject('Physics')">Start Quiz</button>
-                        </div>
-                    </div>
-
-                    <!-- RECENT ATTEMPTS TABLE (FULL WIDTH) -->
-                    <div class="recent-attempts">
-                        <h2>Recent Attempts</h2>
-                        <div class="table-wrapper">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Subject</th>
-                                        <th>Topic</th>
-                                        <th>Score</th>
-                                        <th>Date</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Physics</td>
-                                        <td>Motion</td>
-                                        <td class="score-cell">8/10</td>
-                                        <td>Apr 24, 2024</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Maths</td>
-                                        <td>Trigonometry</td>
-                                        <td class="score-cell">6/10</td>
-                                        <td>Apr 23, 2024</td>
-                                        <td><span class="tag weak">Weak</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Chemistry</td>
-                                        <td>Acids & Bases</td>
-                                        <td class="score-cell">9/10</td>
-                                        <td>Apr 23, 2024</td>
-                                        <td><span class="tag excellent">Excellent</span></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- ANALYTICS CHARTS SECTION -->
-                    <div class="analytics-section">
-                        <h2>📊 Performance Analytics</h2>
-                        <div class="charts-grid">
-                            <!-- PIE CHART: Subject Accuracy -->
-                            <div class="chart-container">
-                                <div class="chart-title">Subject Accuracy</div>
-                                <canvas id="subjectAccuracyChart" class="chart-canvas"></canvas>
-                            </div>
-
-                            <!-- LINE CHART: Performance Over Time -->
-                            <div class="chart-container">
-                                <div class="chart-title">Performance Trend</div>
-                                <canvas id="performanceTrendChart" class="chart-canvas"></canvas>
-                            </div>
-
-                            <!-- BAR CHART: Topic Strengths -->
-                            <div class="chart-container">
-                                <div class="chart-title">Topic Strengths</div>
-                                <canvas id="topicStrengthsChart" class="chart-canvas"></canvas>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ACTIVITY TIMELINE SECTION -->
-                    <div class="timeline-section">
-                        <h2>⏱️ Recent Activity Timeline</h2>
-                        <div class="timeline-list" id="activityTimeline">
-                            <!-- Timeline items populated by JavaScript -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+      <button class="reset-btn" id="resetBtn">🔄 Reset Data</button>
     </div>
 
-    <script>
-        /* ============================================
-           DASHBOARD DATA & LOGIC (workable)
-           - Uses localStorage.currentUser / studentAccounts
-           - Seeds demo attempts if none exist for the student
-           ============================================ */
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+      <!-- TOP BAR -->
+      <div class="top-bar">
+        <h1 class="page-title" id="pageTitle">Dashboard</h1>
+        <button class="take-quiz-btn" id="takeQuizBtn">+ Take a Quiz</button>
+      </div>
 
-        // PAGE TRANSITION HANDLER
-        document.addEventListener('DOMContentLoaded', function() {
-            const transitionOverlay = document.getElementById('pageTransition');
-            if (transitionOverlay) {
-                transitionOverlay.classList.add('fade-out');
-            }
-
-        // Access control on load
-        document.addEventListener('DOMContentLoaded', function() {
-            const storedRole = (localStorage.getItem('role') || '').toLowerCase();
-            let currentUser = null;
-            try{ currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null'); }catch(e){ currentUser = null }
-            const role = storedRole || (currentUser && currentUser.role) || '';
-            // allow both student and parent roles to view the dashboard; otherwise redirect
-            if(!['student','parent'].includes(role)){
-                window.location.href = 'index.html';
-                return;
-            }
-
-            initializeDashboard(currentUser);
-            loadDashboardStats();
-        });
-
-        /* ==========================
-           Student Progress Helpers
-           Key: progress_<studentID>
-           Functions provided:
-             - initializeProgress()
-             - updateProgress(subject, correct, total)
-             - loadDashboardStats()
-           ========================== */
-
-        function _getProgressKey(studentID){ return `progress_${studentID}`; }
-
-        function initializeProgress(){
-            const studentID = localStorage.getItem('studentID') || 'demo-student';
-            const key = _getProgressKey(studentID);
-            try{
-                const existing = JSON.parse(localStorage.getItem(key) || 'null');
-                if(existing) return existing;
-            }catch(e){ }
-            const progress = {
-                quizzesAttempted: 0,
-                totalQuestions: 0,
-                correctAnswers: 0,
-                subjectStats: {
-                    Physics: {attempts:0, correct:0},
-                    Maths: {attempts:0, correct:0},
-                    Chemistry: {attempts:0, correct:0},
-                    Biology: {attempts:0, correct:0}
-                }
-            };
-            try{ localStorage.setItem(key, JSON.stringify(progress)); }catch(e){}
-            return progress;
-        }
-
-        function loadProgress(){
-            const studentID = localStorage.getItem('studentID') || 'demo-student';
-            const key = _getProgressKey(studentID);
-            try{ return JSON.parse(localStorage.getItem(key) || 'null') || null; }catch(e){ return null; }
-        }
-
-        function saveProgress(progress){
-            const studentID = localStorage.getItem('studentID') || 'demo-student';
-            const key = _getProgressKey(studentID);
-            try{ localStorage.setItem(key, JSON.stringify(progress)); }catch(e){}
-        }
-
-        function updateProgress(subject, correct, total){
-            const studentID = localStorage.getItem('studentID') || 'demo-student';
-            let progress = loadProgress();
-            if(!progress) progress = initializeProgress();
-            progress.quizzesAttempted = (progress.quizzesAttempted || 0) + 1;
-            progress.totalQuestions = (progress.totalQuestions || 0) + (total || 0);
-            progress.correctAnswers = (progress.correctAnswers || 0) + (correct || 0);
-            if(!progress.subjectStats) progress.subjectStats = {Physics:{attempts:0,correct:0},Maths:{attempts:0,correct:0},Chemistry:{attempts:0,correct:0},Biology:{attempts:0,correct:0}};
-            if(!progress.subjectStats[subject]) progress.subjectStats[subject] = {attempts:0, correct:0};
-            progress.subjectStats[subject].attempts += (total || 0);
-            progress.subjectStats[subject].correct += (correct || 0);
-            saveProgress(progress);
-            loadDashboardStats();
-            return progress;
-        }
-
-        function generateAIInsight(progress, accuracy, weakest, stats) {
-            const totalQuestions = progress.totalQuestions || 0;
-            const quizzesAttempted = progress.quizzesAttempted || 0;
-            
-            if (quizzesAttempted === 0) {
-                return "Begin your learning journey by taking your first quiz to unlock personalized insights.";
-            }
-
-            // Find best and worst subjects
-            let bestSubject = '';
-            let worstSubject = '';
-            let maxRate = 0;
-            let minRate = 1;
-            
-            Object.keys(stats).forEach(subject => {
-                const s = stats[subject];
-                if ((s.attempts || 0) > 0) {
-                    const rate = s.correct / (s.attempts || 1);
-                    if (rate > maxRate) {
-                        maxRate = rate;
-                        bestSubject = subject;
-                    }
-                    if (rate < minRate) {
-                        minRate = rate;
-                        worstSubject = subject;
-                    }
-                }
-            });
-
-            // Generate insight message
-            let insight = '';
-            const readinessTarget = 80;
-            const quizzesNeeded = Math.max(0, Math.ceil((readinessTarget - accuracy) / 10));
-            
-            if (accuracy >= 85) {
-                insight = `Excellent progress! You excel in ${bestSubject}. ${worstSubject ? 'Focus on strengthening your ' + worstSubject + ' skills to reach mastery.' : 'Keep practicing to maintain your momentum.'}`;
-            } else if (accuracy >= 75) {
-                insight = `Good work! You're strong in ${bestSubject}, but ${worstSubject} needs attention. Practice ${quizzesNeeded} more ${quizzesNeeded === 1 ? 'quiz' : 'quizzes'} to boost your readiness.`;
-            } else if (accuracy >= 60) {
-                insight = `You show promise in ${bestSubject}, but ${worstSubject} requires focus. Complete ${quizzesNeeded} more ${quizzesNeeded === 1 ? 'quiz' : 'quizzes'} to improve your readiness level.`;
-            } else {
-                insight = `Let's boost your performance! Focus on ${worstSubject} and practice consistently. ${quizzesNeeded} more ${quizzesNeeded === 1 ? 'quiz' : 'quizzes'} can make a real difference.`;
-            }
-            
-            return insight;
-        }
-
-        function loadDashboardStats(){
-            const progress = loadProgress() || initializeProgress();
-            const quizzesAttempted = progress.quizzesAttempted || 0;
-            const totalQuestions = progress.totalQuestions || 0;
-            const correctAnswers = progress.correctAnswers || 0;
-
-            // Show empty state if no quizzes attempted
-            const emptyStateContainer = document.querySelector('.empty-state-container');
-            const dashboard = document.querySelector('.dashboard');
-            if(quizzesAttempted === 0){
-                if(emptyStateContainer) emptyStateContainer.classList.add('active');
-                if(dashboard) dashboard.classList.add('hidden-for-empty');
-                return;
-            }else{
-                if(emptyStateContainer) emptyStateContainer.classList.remove('active');
-                if(dashboard) dashboard.classList.remove('hidden-for-empty');
-            }
-
-            const accuracy = totalQuestions ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
-
-            let weakest = 'No Data Yet';
-            let minRate = 1;
-            const stats = progress.subjectStats || {};
-            let anyAttempted = false;
-            Object.keys(stats).forEach(sub => {
-                const s = stats[sub];
-                if((s.attempts || 0) > 0){
-                    anyAttempted = true;
-                    const rate = s.correct / (s.attempts || 1);
-                    if(rate < minRate){ minRate = rate; weakest = sub; }
-                }
-            });
-            if(!anyAttempted) weakest = 'No Data Yet';
-
-            const predicted = Math.round(accuracy / 2);
-            
-            // Generate and display AI Insight
-            const aiInsightText = document.getElementById('aiInsightText');
-            if (aiInsightText) {
-                aiInsightText.textContent = generateAIInsight(progress, accuracy, weakest, stats);
-            }
-
-            const qEl = document.getElementById('questions-value'); if(qEl) qEl.textContent = (totalQuestions || 0).toLocaleString();
-            const aEl = document.getElementById('accuracy-value'); if(aEl) aEl.textContent = accuracy + '%';
-            const wEl = document.getElementById('weakest-subject'); if(wEl) wEl.textContent = weakest;
-            const pEl = document.getElementById('predicted-score'); if(pEl) pEl.textContent = predicted + '/50';
-            const bar = document.querySelector('.progress-bar'); if(bar) bar.style.width = Math.min(100, Math.round((predicted/50)*100)) + '%';
-            const readEl = document.getElementById('readiness-percentage'); if(readEl) readEl.textContent = String(accuracy) + '%';
-
-            const degrees = (parseInt(accuracy,10) / 100) * 360;
-            const progressCircle = document.querySelector('.progress-circle');
-            if(progressCircle) progressCircle.style.background = `conic-gradient(var(--accent-yellow) 0deg, var(--accent-yellow) ${degrees}deg, #e5e5e5 ${degrees}deg, #e5e5e5 360deg)`;
-        }
-
-        function initializeDashboard(currentUser){
-            // Resolve student id and name
-            const studentId = (currentUser && currentUser.studentId) || localStorage.getItem('studentID') || 'demo-student';
-            let studentName = (currentUser && currentUser.fullName) || localStorage.getItem('studentName') || null;
-
-            // Try to find a matching student account
-            try{
-                const accounts = JSON.parse(localStorage.getItem('studentAccounts') || '[]');
-                const found = accounts.find(a=>a.studentId === studentId);
-                if(found && !studentName) studentName = found.fullName || found.studentId;
-            }catch(e){/* ignore */}
-
-            if(!studentName) studentName = studentId;
-
-            // Update header profile
-            const avatarEl = document.querySelector('.student-avatar');
-            const nameEl = document.querySelector('.student-name');
-            if(avatarEl) avatarEl.textContent = studentName.split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase();
-            if(nameEl) nameEl.textContent = studentName;
-
-            // Load or seed attempts
-            const attemptsKey = `attempts_${studentId}`;
-            let attempts = [];
-            try{ attempts = JSON.parse(localStorage.getItem(attemptsKey) || 'null') || []; }catch(e){ attempts = []; }
-            if(!attempts || attempts.length === 0){
-                attempts = [
-                    {subject:'Physics', topic:'Motion', score:8, outOf:10, date:'2026-02-05'},
-                    {subject:'Maths', topic:'Trigonometry', score:6, outOf:10, date:'2026-02-03'},
-                    {subject:'Chemistry', topic:'Acids & Bases', score:9, outOf:10, date:'2026-02-01'}
-                ];
-                try{ localStorage.setItem(attemptsKey, JSON.stringify(attempts)); }catch(e){}
-            }
-
-            // Compute statistics
-            const totalQuestions = attempts.reduce((s,a)=>s + (a.outOf || 0), 0) || 0;
-            const totalCorrect = attempts.reduce((s,a)=>s + (a.score || 0), 0) || 0;
-            const questionsPracticed = totalQuestions;
-            const accuracy = totalQuestions ? Math.round((totalCorrect/totalQuestions)*100) : 0;
-            const bySubject = {};
-            attempts.forEach(a=>{
-                if(!bySubject[a.subject]) bySubject[a.subject] = {correct:0,total:0};
-                bySubject[a.subject].correct += a.score || 0;
-                bySubject[a.subject].total += a.outOf || 0;
-            });
-            let weakest = '—'; let minRate = 1;
-            Object.keys(bySubject).forEach(sub=>{
-                const obj = bySubject[sub];
-                const rate = obj.total ? obj.correct/obj.total : 1;
-                if(rate < minRate){ minRate = rate; weakest = sub; }
-            });
-            const predicted = Math.round((accuracy/100) * 50);
-            const readiness = localStorage.getItem('readiness') || String(accuracy || 68);
-
-            // Update DOM values
-            const qEl = document.getElementById('questions-value'); if(qEl) qEl.textContent = (questionsPracticed || 0).toLocaleString();
-            const aEl = document.getElementById('accuracy-value'); if(aEl) aEl.textContent = accuracy + '%';
-            const wEl = document.getElementById('weakest-subject'); if(wEl) wEl.textContent = weakest;
-            const pEl = document.getElementById('predicted-score'); if(pEl) pEl.textContent = predicted + '/50';
-            const bar = document.querySelector('.progress-bar'); if(bar) bar.style.width = Math.min(100, Math.round((predicted/50)*100)) + '%';
-            const readEl = document.getElementById('readiness-percentage'); if(readEl) readEl.textContent = readiness + '%';
-            const badge = document.getElementById('badge-readiness'); if(badge) badge.textContent = readiness;
-
-            // Update circular progress
-            const degrees = (parseInt(readiness,10) / 100) * 360;
-            const progressCircle = document.querySelector('.progress-circle');
-            if(progressCircle) progressCircle.style.background = `conic-gradient(var(--accent-yellow) 0deg, var(--accent-yellow) ${degrees}deg, #e5e5e5 ${degrees}deg, #e5e5e5 360deg)`;
-
-            // Fill recent attempts table
-            const tbody = document.querySelector('.recent-attempts table tbody');
-            if(tbody){
-                tbody.innerHTML = '';
-                attempts.slice(0,10).forEach(a=>{
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `<td>${escapeHtml(a.subject)}</td><td>${escapeHtml(a.topic)}</td><td class="score-cell">${a.score}/${a.outOf}</td><td>${escapeHtml(a.date)}</td><td>${getStatusTag(a)}</td>`;
-                    tbody.appendChild(tr);
-                });
-            }
-
-            // Wire interactions
-            document.querySelectorAll('.nav-link').forEach(link=>{
-                link.addEventListener('click', function(e){ e.preventDefault(); handleNavClick(e); });
-            });
-            const logoutBtn = document.querySelector('.logout-btn');
-            if(logoutBtn) logoutBtn.addEventListener('click', function(e){ e.preventDefault(); handleLogout(e, studentName); });
-            const continueBtn = document.querySelector('.welcome-card .btn-primary');
-            if(continueBtn) continueBtn.addEventListener('click', function(){ goToPractice(); });
-        }
-
-        function getStatusTag(attempt){
-            const pct = attempt.outOf ? (attempt.score/attempt.outOf)*100 : 0;
-            if(pct >= 90) return '<span class="tag excellent">Excellent</span>';
-            if(pct < 70) return '<span class="tag weak">Weak</span>';
-            return '';
-        }
-
-        function escapeHtml(str){ return String(str||'').replace(/[&<>"']/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"})[ch]); }
-
-        function goToPractice(){
-            window.location.href = 'quiz.html?subject=Physics';
-        }
-
-        function handleNavClick(event) {
-            event.preventDefault();
-            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            const txt = event.currentTarget.textContent.trim();
-            if(txt === 'Practice Quiz') return goToPractice();
-            if(txt === 'Progress Report'){
-                const right = document.getElementById('rightContent');
-                if(right){
-                    right.innerHTML = '<div class="exam-readiness-card"><iframe title="Progress Report" src="/progress-report.html" style="width:100%;height:520px;border:none;border-radius:12px;"></iframe></div>';
-                }
-                return;
-            }
-            alert(txt + ' page not implemented in demo.');
-        }
-
-        function handleLogout(event, name){
-            event && event.preventDefault();
-            document.getElementById('logoutModal').classList.add('active');
-        }
-
-        function closeLogoutModal(){
-            document.getElementById('logoutModal').classList.remove('active');
-        }
-
-        function confirmLogout(){
-            closeLogoutModal();
-            try{ localStorage.removeItem('currentUser'); localStorage.removeItem('role'); localStorage.removeItem('studentID'); localStorage.removeItem('studentName'); }catch(e){}
-            window.location.href = 'index.html';
-        }
-
-        function toggleSubjectDropdown(event){
-            event && event.preventDefault();
-            const submenu = document.getElementById('subjectDropdown');
-            const arrow = event.currentTarget.querySelector('.dropdown-arrow');
-            
-            if(submenu){
-                submenu.classList.toggle('show');
-                if(arrow) arrow.classList.toggle('rotate');
-            }
-        }
-
-        function selectSubject(subject){
-            const transitionOverlay = document.getElementById('pageTransition');
-            if (transitionOverlay) {
-                transitionOverlay.classList.remove('fade-out');
-                transitionOverlay.classList.add('fade-in');
-                setTimeout(() => {
-                    window.location.href = 'quiz.html?subject=' + encodeURIComponent(subject);
-                }, 400);
-            } else {
-                window.location.href = 'quiz.html?subject=' + encodeURIComponent(subject);
-            }
-        }
-
-        function handleNavigation(href) {
-            event && event.preventDefault();
-            event && event.stopPropagation();
-            const transitionOverlay = document.getElementById('pageTransition');
-            if (transitionOverlay) {
-                transitionOverlay.classList.remove('fade-out');
-                transitionOverlay.classList.add('fade-in');
-                setTimeout(() => { window.location.href = href; }, 400);
-            } else {
-                window.location.href = href;
-            }
-        }
-    </script>
-    <!-- PAGE TRANSITION OVERLAY -->
-    <div class="page-transition-overlay" id="pageTransition"></div>
-
-    <!-- LOGOUT CONFIRMATION MODAL -->
-    <div class="logout-modal-overlay" id="logoutModal">
-        <div class="logout-modal-content">
-            <div class="logout-modal-icon">👋</div>
-            <div class="logout-modal-header">Do you want to leave?</div>
-            <div class="logout-modal-body">Do you want to leave your learning session?</div>
-            <div class="logout-modal-buttons">
-                <button class="logout-modal-button logout-modal-button-cancel" onclick="closeLogoutModal()">Cancel</button>
-                <button class="logout-modal-button logout-modal-button-confirm" onclick="confirmLogout()">Logout</button>
+      <!-- CONTENT AREA -->
+      <div class="content-area">
+        <!-- DASHBOARD VIEW -->
+        <div class="view active" id="dashboard">
+          <div class="stats-grid">
+            <div class="stat-card accent-1">
+              <div class="stat-label">Overall Accuracy</div>
+              <div class="stat-value" id="overallAccuracy">0%</div>
+              <div class="stat-detail">Across all quizzes</div>
             </div>
+            <div class="stat-card accent-2">
+              <div class="stat-label">Quizzes Taken</div>
+              <div class="stat-value" id="quizzesTaken">0</div>
+              <div class="stat-detail">Total attempts</div>
+            </div>
+            <div class="stat-card accent-3">
+              <div class="stat-label">Top Subject</div>
+              <div class="stat-value" id="topSubject" style="font-size: 24px;">—</div>
+              <div class="stat-detail" id="topSubjectScore">No data yet</div>
+            </div>
+            <div class="stat-card accent-4">
+              <div class="stat-label">Current Streak</div>
+              <div class="stat-value" id="streakDays">0</div>
+              <div class="stat-detail">Days in a row</div>
+            </div>
+          </div>
+
+          <div class="charts-row">
+            <div class="chart-card">
+              <div class="chart-title">Subject Accuracy</div>
+              <canvas id="subjectAccuracyChart"></canvas>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">Performance Trend</div>
+              <canvas id="performanceTrendChart"></canvas>
+            </div>
+          </div>
+
+          <div class="list-grid">
+            <div class="list-card">
+              <div class="list-header">Recent Quizzes</div>
+              <div class="list-items" id="recentQuizzes"></div>
+            </div>
+            <div class="list-card">
+              <div class="list-header">Activity Timeline</div>
+              <div class="list-items" id="activityTimeline"></div>
+            </div>
+          </div>
         </div>
+
+        <!-- QUIZZES VIEW -->
+        <div class="view" id="quizzes">
+          <div class="list-card">
+            <div class="list-header">All Available Quizzes</div>
+            <div class="list-items" id="allQuizzes"></div>
+          </div>
+        </div>
+
+        <!-- PERFORMANCE VIEW -->
+        <div class="view" id="performance">
+          <div class="charts-row">
+            <div class="chart-card">
+              <div class="chart-title">Topic Strengths</div>
+              <canvas id="topicStrengthsChart"></canvas>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">Subject Performance</div>
+              <canvas id="subjectPerformanceChart"></canvas>
+            </div>
+          </div>
+          <div class="list-card">
+            <div class="list-header">Detailed Statistics</div>
+            <div class="list-items" id="detailedStats"></div>
+          </div>
+        </div>
+
+        <!-- TOPICS VIEW -->
+        <div class="view" id="topics">
+          <div class="list-card">
+            <div class="list-header">All Topics</div>
+            <div class="list-items" id="topicsList"></div>
+          </div>
+        </div>
+
+        <!-- PROFILE VIEW -->
+        <div class="view" id="profile">
+          <div class="list-card">
+            <div class="list-header">Student Profile</div>
+            <div class="list-items" id="profileContent"></div>
+          </div>
+        </div>
+
+        <!-- SETTINGS VIEW -->
+        <div class="view" id="settings">
+          <div class="list-card">
+            <div class="list-header">Settings</div>
+            <div class="list-items" id="settingsContent"></div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div><div class="loading-text">Preparing your learning space…</div></div>
-    <script>
-        function showLoader() { const el = document.getElementById('loadingOverlay'); if(el) el.classList.add('active'); }
-        function hideLoader() { const el = document.getElementById('loadingOverlay'); if(el) el.classList.remove('active'); }
-        window.addEventListener('load', hideLoader);
-        document.querySelectorAll('a[href*="quiz.html"], .sidebar a, .practice-btn').forEach(el => { 
-            el.addEventListener('click', function(e) { if(this.href) showLoader(); }); 
+  <script>
+    // ==================== MOCK DATA ====================
+    const studentID = 'student-' + Math.random().toString(36).substr(2, 9);
+    const progressKey = `progress_${studentID}`;
+    const attemptsKey = `attempts_${studentID}`;
+
+    let charts = {
+      subjectAccuracy: null,
+      performanceTrend: null,
+      topicStrengths: null,
+      subjectPerformance: null
+    };
+
+    // ==================== UTILITIES ====================
+    function showLoader() {
+      document.getElementById('loader').classList.add('active');
+    }
+
+    function hideLoader() {
+      document.getElementById('loader').classList.remove('active');
+    }
+
+    function getRelativeTime(dateString) {
+      const now = new Date();
+      const date = new Date(dateString);
+      const diff = Math.floor((now - date) / 1000);
+
+      if (diff < 60) return 'Just now';
+      if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+      if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+      if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
+      return date.toLocaleDateString();
+    }
+
+    // ==================== DATA SEEDING ====================
+    function seedMockData() {
+      if (localStorage.getItem('prepsense_seeded')) return;
+
+      const subjects = ['Math', 'Science', 'English', 'History'];
+      const subjectStats = {};
+      const topicsList = ['Algebra', 'Geometry', 'Chemistry', 'Biology', 'Literature', 'Grammar', 'Ancient History', 'Modern History'];
+
+      subjects.forEach((subject, idx) => {
+        const attempts = Math.floor(Math.random() * 15) + 8;
+        const correct = Math.floor(attempts * (0.45 + Math.random() * 0.5));
+        subjectStats[subject] = {
+          attempts: attempts,
+          correct: correct,
+          topics: {
+            [topicsList[idx * 2]]: Math.floor(Math.random() * 100),
+            [topicsList[idx * 2 + 1]]: Math.floor(Math.random() * 100)
+          }
+        };
+      });
+
+      const progress = {
+        studentName: 'John Doe',
+        studentRoll: '10A-024',
+        school: 'Central High School',
+        email: 'john.doe@example.com',
+        joinDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
+        subjectStats: subjectStats,
+        totalTopics: topicsList.length,
+        topics: topicsList
+      };
+
+      localStorage.setItem(progressKey, JSON.stringify(progress));
+
+      // Create attempts
+      const attempts = [];
+      for (let i = 0; i < 20; i++) {
+        const subject = subjects[Math.floor(Math.random() * subjects.length)];
+        const score = Math.floor(Math.random() * 20) + 3;
+        attempts.push({
+          id: 'q' + (i + 1),
+          title: `Quiz ${i + 1} - ${subject}`,
+          subject: subject,
+          score: score,
+          outOf: 20,
+          date: new Date(Date.now() - Math.random() * 60 * 24 * 60 * 60 * 1000).toISOString()
         });
-        const origSelectSubject = window.selectSubject;
-        window.selectSubject = function(s) { showLoader(); return origSelectSubject(s); };
+      }
 
-        /* ============================================
-           CHART INITIALIZATION & DATA LOADING
-           ============================================ */
-        let subjectAccuracyChart = null;
-        let performanceTrendChart = null;
-        let topicStrengthsChart = null;
+      localStorage.setItem(attemptsKey, JSON.stringify(attempts.sort((a, b) => new Date(b.date) - new Date(a.date))));
+      localStorage.setItem('prepsense_seeded', '1');
+    }
 
-        function initializeCharts() {
-            const studentID = localStorage.getItem('studentID') || 'demo-student';
-            const progressKey = `progress_${studentID}`;
-            const attemptsKey = `attempts_${studentID}`;
-            
-            try {
-                const progress = JSON.parse(localStorage.getItem(progressKey) || '{}');
-                const attempts = JSON.parse(localStorage.getItem(attemptsKey) || '[]');
-                
-                // Only load charts if there's data
-                if (progress.quizzesAttempted > 0) {
-                    initializeSubjectAccuracyChart(progress);
-                    initializePerformanceTrendChart(attempts);
-                    initializeTopicStrengthsChart(progress);
-                }
-            } catch (e) {
-                console.error('Error loading chart data:', e);
+    // ==================== RENDERING ====================
+    function renderDashboard() {
+      const progress = JSON.parse(localStorage.getItem(progressKey) || '{}');
+      const attempts = JSON.parse(localStorage.getItem(attemptsKey) || '[]');
+      const stats = progress.subjectStats || {};
+
+      // Update student info
+      document.getElementById('studentName').textContent = progress.studentName || 'Student';
+      document.getElementById('studentClass').textContent = progress.studentRoll + ' • ' + progress.school;
+
+      // Calculate overall accuracy
+      let totalCorrect = 0, totalAttempts = 0;
+      Object.values(stats).forEach(s => {
+        totalCorrect += s.correct || 0;
+        totalAttempts += s.attempts || 0;
+      });
+      const overallAcc = totalAttempts ? Math.round((totalCorrect / totalAttempts) * 100) : 0;
+
+      document.getElementById('overallAccuracy').textContent = overallAcc + '%';
+      document.getElementById('quizzesTaken').textContent = attempts.length;
+
+      // Top subject
+      let topSubject = '—', topScore = 0;
+      Object.keys(stats).forEach(s => {
+        const acc = Math.round((stats[s].correct / stats[s].attempts) * 100) || 0;
+        if (acc > topScore) { topScore = acc; topSubject = s; }
+      });
+      document.getElementById('topSubject').textContent = topSubject;
+      document.getElementById('topSubjectScore').textContent = topScore + '% accuracy';
+
+      // Streak (mock)
+      document.getElementById('streakDays').textContent = Math.floor(Math.random() * 30) + 1;
+
+      // Recent quizzes
+      const quizzesHtml = attempts.slice(0, 5).map(a => `
+        <div class="list-item">
+          <div class="item-left">
+            <div class="item-title">${a.title}</div>
+            <div class="item-meta">${a.subject} • ${getRelativeTime(a.date)}</div>
+          </div>
+          <div class="item-stats">
+            <div class="item-score">${Math.round((a.score/a.outOf)*100)}%</div>
+            <div class="item-meta">${a.score}/${a.outOf}</div>
+          </div>
+          <button class="item-btn" onclick="openQuiz('${a.title}')">Retry</button>
+        </div>
+      `).join('');
+      document.getElementById('recentQuizzes').innerHTML = quizzesHtml || '<div style="padding: 24px; text-align: center; color: #6c757d;">No quizzes yet</div>';
+
+      // Timeline
+      const timelineHtml = attempts.slice(0, 7).map(a => `
+        <div class="timeline-item">
+          <div class="timeline-title">${a.title}</div>
+          <div class="timeline-meta">${a.subject} • ${getRelativeTime(a.date)} • Score: ${a.score}/${a.outOf}</div>
+        </div>
+      `).join('');
+      document.getElementById('activityTimeline').innerHTML = timelineHtml || '<div style="padding: 24px; text-align: center; color: #6c757d;">No activity</div>';
+
+      // Charts
+      initCharts(progress, attempts);
+    }
+
+    function initCharts(progress, attempts) {
+      const stats = progress.subjectStats || {};
+      const subjects = Object.keys(stats);
+
+      // Subject Accuracy Chart
+      if (charts.subjectAccuracy) charts.subjectAccuracy.destroy();
+      const ctx1 = document.getElementById('subjectAccuracyChart');
+      if (ctx1) {
+        const accuracies = subjects.map(s => Math.round((stats[s].correct / stats[s].attempts) * 100) || 0);
+        charts.subjectAccuracy = new Chart(ctx1, {
+          type: 'bar',
+          data: {
+            labels: subjects,
+            datasets: [{
+              label: 'Accuracy %',
+              data: accuracies,
+              backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#4facfe'],
+              borderRadius: 8,
+              borderSkipped: false
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: { beginAtZero: true, max: 100 }
+            },
+            plugins: {
+              legend: { display: false }
             }
-        }
+          }
+        });
+      }
 
-        function initializeSubjectAccuracyChart(progress) {
-            if (!progress.subjectStats) return;
-            
-            const labels = [];
-            const data = [];
-            const colors = ['#F0D637', '#5B88B2', '#4caf50', '#ff6b6b'];
-            const subjects = Object.keys(progress.subjectStats);
-            
-            subjects.forEach(subject => {
-                const stats = progress.subjectStats[subject];
-                if (stats.attempts > 0) {
-                    labels.push(subject);
-                    const accuracy = (stats.correct / stats.attempts) * 100;
-                    data.push(accuracy.toFixed(1));
-                }
-            });
-            
-            if (labels.length === 0) return;
-            
-            const ctx = document.getElementById('subjectAccuracyChart');
-            if (ctx && subjectAccuracyChart) subjectAccuracyChart.destroy();
-            
-            subjectAccuracyChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: data,
-                        backgroundColor: colors.slice(0, labels.length),
-                        borderColor: '#FFFFFF',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { font: { size: 12 }, color: '#122C4F', padding: 15 }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: (context) => ` ${context.label}: ${context.parsed}%`
-                            }
-                        }
-                    }
-                }
-            });
-        }
+      // Performance Trend Chart
+      if (charts.performanceTrend) charts.performanceTrend.destroy();
+      const ctx2 = document.getElementById('performanceTrendChart');
+      if (ctx2) {
+        const sorted = attempts.slice().sort((a, b) => new Date(a.date) - new Date(b.date)).slice(-12);
+        const labels = sorted.map((_, i) => 'Q' + (i + 1));
+        const data = sorted.map(a => Math.round((a.score / a.outOf) * 100));
+        charts.performanceTrend = new Chart(ctx2, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Accuracy %',
+              data: data,
+              borderColor: '#667eea',
+              backgroundColor: 'rgba(102, 126, 234, 0.1)',
+              fill: true,
+              tension: 0.4,
+              pointBackgroundColor: '#667eea',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2,
+              pointRadius: 5
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: { beginAtZero: true, max: 100 }
+            },
+            plugins: {
+              legend: { display: true }
+            }
+          }
+        });
+      }
 
-        function initializePerformanceTrendChart(attempts) {
-            if (!Array.isArray(attempts) || attempts.length === 0) return;
-            
-            // Sort attempts by date and get last 10
-            const sortedAttempts = attempts
-                .sort((a, b) => new Date(a.date) - new Date(b.date))
-                .slice(-10);
-            
-            const labels = sortedAttempts.map((_, i) => `Attempt ${i + 1}`);
-            const scores = sortedAttempts.map(a => {
-                const accuracy = a.outOf > 0 ? (a.score / a.outOf) * 100 : 0;
-                return accuracy.toFixed(1);
-            });
-            
-            const ctx = document.getElementById('performanceTrendChart');
-            if (ctx && performanceTrendChart) performanceTrendChart.destroy();
-            
-            performanceTrendChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Accuracy %',
-                        data: scores,
-                        borderColor: '#122C4F',
-                        backgroundColor: 'rgba(240, 214, 55, 0.15)',
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: '#F0D637',
-                        pointBorderColor: '#122C4F',
-                        pointBorderWidth: 2,
-                        pointRadius: 5,
-                        pointHoverRadius: 7
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: {
-                            labels: { font: { size: 12 }, color: '#122C4F' }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100,
-                            ticks: { color: '#122C4F' },
-                            grid: { color: 'rgba(18, 44, 79, 0.05)' }
-                        },
-                        x: {
-                            ticks: { color: '#122C4F' },
-                            grid: { color: 'rgba(18, 44, 79, 0.05)' }
-                        }
-                    }
-                }
-            });
-        }
+      // Topic Strengths Chart
+      if (charts.topicStrengths) charts.topicStrengths.destroy();
+      const ctx3 = document.getElementById('topicStrengthsChart');
+      if (ctx3) {
+        const topicMap = {};
+        Object.values(stats).forEach(s => {
+          Object.keys(s.topics || {}).forEach(t => {
+            topicMap[t] = Math.max(topicMap[t] || 0, s.topics[t]);
+          });
+        });
+        const topicLabels = Object.keys(topicMap);
+        const topicData = topicLabels.map(l => topicMap[l]);
+        charts.topicStrengths = new Chart(ctx3, {
+          type: 'radar',
+          data: {
+            labels: topicLabels,
+            datasets: [{
+              label: 'Mastery %',
+              data: topicData,
+              borderColor: '#667eea',
+              backgroundColor: 'rgba(102, 126, 234, 0.2)',
+              pointBackgroundColor: '#667eea'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: true }
+            }
+          }
+        });
+      }
 
-        function initializeTopicStrengthsChart(progress) {
-            if (!progress.subjectStats) return;
-            
-            const labels = [];
-            const data = [];
-            const colors = ['#4caf50', '#5B88B2', '#F0D637', '#ff6b6b'];
-            const subjects = Object.keys(progress.subjectStats);
-            
-            subjects.forEach(subject => {
-                const stats = progress.subjectStats[subject];
-                if (stats.attempts > 0) {
-                    labels.push(subject);
-                    const accuracy = (stats.correct / stats.attempts) * 100;
-                    data.push(accuracy.toFixed(1));
-                }
-            });
-            
-            if (labels.length === 0) return;
-            
-            const ctx = document.getElementById('topicStrengthsChart');
-            if (ctx && topicStrengthsChart) topicStrengthsChart.destroy();
-            
-            topicStrengthsChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Accuracy %',
-                        data: data,
-                        backgroundColor: colors.slice(0, labels.length),
-                        borderColor: '#122C4F',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            max: 100,
-                            ticks: { color: '#122C4F' },
-                            grid: { color: 'rgba(18, 44, 79, 0.05)' }
-                        },
-                        y: {
-                            ticks: { color: '#122C4F' },
-                            grid: { display: false }
-                        }
-                    }
-                }
-            });
-        }
+      // Subject Performance Chart
+      if (charts.subjectPerformance) charts.subjectPerformance.destroy();
+      const ctx4 = document.getElementById('subjectPerformanceChart');
+      if (ctx4) {
+        const attempts_count = subjects.map(s => stats[s].attempts);
+        charts.subjectPerformance = new Chart(ctx4, {
+          type: 'doughnut',
+          data: {
+            labels: subjects,
+            datasets: [{
+              data: attempts_count,
+              backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#4facfe']
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'bottom' }
+            }
+          }
+        });
+      }
+    }
 
-        // Initialize charts when DOM is ready
-        window.addEventListener('load', () => {
-            setTimeout(initializeCharts, 500);
+    function renderQuizzes() {
+      const attempts = JSON.parse(localStorage.getItem(attemptsKey) || '[]');
+      const uniqueTitles = [...new Set(attempts.map(a => a.title))];
+      
+      const html = uniqueTitles.map((title, idx) => `
+        <div class="list-item">
+          <div class="item-left">
+            <div class="item-title">${title}</div>
+            <div class="item-meta">20 questions • 15 minutes</div>
+          </div>
+          <button class="item-btn" onclick="openQuiz('${title}')">Start</button>
+        </div>
+      `).join('');
+
+      document.getElementById('allQuizzes').innerHTML = html;
+    }
+
+    function renderPerformance() {
+      const progress = JSON.parse(localStorage.getItem(progressKey) || '{}');
+      const stats = progress.subjectStats || {};
+
+      const html = Object.keys(stats).map(subject => {
+        const s = stats[subject];
+        const acc = Math.round((s.correct / s.attempts) * 100);
+        return `
+          <div class="list-item">
+            <div class="item-left">
+              <div class="item-title">${subject}</div>
+              <div class="item-meta">${s.correct} correct out of ${s.attempts} attempts</div>
+            </div>
+            <div class="item-stats">
+              <div class="item-score">${acc}%</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('detailedStats').innerHTML = html;
+    }
+
+    function renderTopics() {
+      const progress = JSON.parse(localStorage.getItem(progressKey) || '{}');
+      const topics = progress.topics || [];
+
+      const html = topics.map(topic => `
+        <div class="list-item">
+          <div class="item-left">
+            <div class="item-title">${topic}</div>
+            <div class="item-meta">Strength: ${Math.floor(Math.random() * 100)}%</div>
+          </div>
+          <button class="item-btn" onclick="alert('Topic: ${topic}')">View</button>
+        </div>
+      `).join('');
+
+      document.getElementById('topicsList').innerHTML = html;
+    }
+
+    function renderProfile() {
+      const progress = JSON.parse(localStorage.getItem(progressKey) || '{}');
+
+      const html = `
+        <div class="list-item">
+          <div class="item-left">
+            <div class="item-title">Name</div>
+            <div class="item-meta">${progress.studentName || 'N/A'}</div>
+          </div>
+        </div>
+        <div class="list-item">
+          <div class="item-left">
+            <div class="item-title">Roll Number</div>
+            <div class="item-meta">${progress.studentRoll || 'N/A'}</div>
+          </div>
+        </div>
+        <div class="list-item">
+          <div class="item-left">
+            <div class="item-title">School</div>
+            <div class="item-meta">${progress.school || 'N/A'}</div>
+          </div>
+        </div>
+        <div class="list-item">
+          <div class="item-left">
+            <div class="item-title">Email</div>
+            <div class="item-meta">${progress.email || 'N/A'}</div>
+          </div>
+        </div>
+        <div class="list-item">
+          <div class="item-left">
+            <div class="item-title">Member Since</div>
+            <div class="item-meta">${new Date(progress.joinDate).toLocaleDateString()}</div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('profileContent').innerHTML = html;
+    }
+
+    function renderSettings() {
+      const html = `
+        <div class="list-item">
+          <div class="item-left">
+            <div class="item-title">Enable Notifications</div>
+            <div class="item-meta">Get quiz reminders</div>
+          </div>
+          <input type="checkbox" checked>
+        </div>
+        <div class="list-item">
+          <div class="item-left">
+            <div class="item-title">Email Updates</div>
+            <div class="item-meta">Weekly progress summary</div>
+          </div>
+          <input type="checkbox" checked>
+        </div>
+        <div class="list-item">
+          <div class="item-left">
+            <div class="item-title">Dark Mode</div>
+            <div class="item-meta">Switch theme</div>
+          </div>
+          <input type="checkbox">
+        </div>
+        <div class="list-item">
+          <div class="item-left">
+            <div class="item-title">Sound Effects</div>
+            <div class="item-meta">Play sounds on events</div>
+          </div>
+          <input type="checkbox" checked>
+        </div>
+      `;
+
+      document.getElementById('settingsContent').innerHTML = html;
+    }
+
+    // ==================== NAVIGATION ====================
+    document.querySelectorAll('.nav-button').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+
+        const viewName = this.dataset.view;
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById(viewName).classList.add('active');
+
+        const titles = {
+          dashboard: 'Dashboard',
+          quizzes: 'All Quizzes',
+          performance: 'Performance',
+          topics: 'Topics',
+          profile: 'Profile',
+          settings: 'Settings'
+        };
+
+        document.getElementById('pageTitle').textContent = titles[viewName];
+
+        if (viewName === 'quizzes') renderQuizzes();
+        if (viewName === 'performance') renderPerformance();
+        if (viewName === 'topics') renderTopics();
+        if (viewName === 'profile') renderProfile();
+        if (viewName === 'settings') renderSettings();
+      });
+    });
+
+    // ==================== QUIZ LOGIC ====================
+    window.openQuiz = function(quizTitle) {
+      showLoader();
+      setTimeout(() => {
+        hideLoader();
+        const score = Math.floor(Math.random() * 18) + 3;
+        const attempts = JSON.parse(localStorage.getItem(attemptsKey) || '[]');
+
+        attempts.push({
+          id: 'q' + (attempts.length + 1),
+          title: quizTitle,
+          subject: quizTitle.split('-')[1]?.trim() || 'Practice',
+          score: score,
+          outOf: 20,
+          date: new Date().toISOString()
         });
 
-        /* ============================================
-           ACTIVITY TIMELINE
-           Displays last 5 quiz attempts
-           ============================================ */
-        
-        function getRelativeDate(dateString) {
-            const now = new Date();
-            const attemptDate = new Date(dateString);
-            const diffTime = now - attemptDate;
-            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-            
-            if (diffDays === 0) {
-                const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
-                if (diffHours === 0) return 'Just now';
-                return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-            } else if (diffDays === 1) {
-                return 'Yesterday';
-            } else if (diffDays < 7) {
-                return `${diffDays} days ago`;
-            } else {
-                return attemptDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: attemptDate.getFullYear() !== now.getFullYear() ? 'numeric' : undefined });
-            }
-        }
+        localStorage.setItem(attemptsKey, JSON.stringify(attempts));
+        renderDashboard();
+        renderQuizzes();
 
-        function getScoreStatus(score, outOf) {
-            const accuracy = (score / outOf) * 100;
-            if (accuracy >= 80) return 'excellent';
-            if (accuracy >= 60) return 'good';
-            return 'weak';
-        }
+        alert(`✅ Quiz Completed!\n\nScore: ${score}/20\nAccuracy: ${Math.round((score/20)*100)}%`);
+      }, 1200);
+    };
 
-        function populateActivityTimeline() {
-            const studentID = localStorage.getItem('studentID') || 'demo-student';
-            const attemptsKey = `attempts_${studentID}`;
-            
-            try {
-                const attempts = JSON.parse(localStorage.getItem(attemptsKey) || '[]');
-                const timelineContainer = document.getElementById('activityTimeline');
-                
-                if (!timelineContainer) return;
-                
-                // Sort by date descending (newest first) and get last 5
-                const recentAttempts = attempts
-                    .sort((a, b) => new Date(b.date) - new Date(a.date))
-                    .slice(0, 5);
-                
-                if (recentAttempts.length === 0) {
-                    timelineContainer.innerHTML = '<p style="color: #7a8290; text-align: center; padding: 20px;">No quiz attempts yet. Start with a quiz to see your activity!</p>';
-                    return;
-                }
-                
-                let html = '';
-                recentAttempts.forEach(attempt => {
-                    const status = getScoreStatus(attempt.score, attempt.outOf);
-                    const relativeDate = getRelativeDate(attempt.date);
-                    const accuracy = ((attempt.score / attempt.outOf) * 100).toFixed(0);
-                    
-                    html += `
-                        <div class="timeline-item">
-                            <div class="timeline-marker ${status}"></div>
-                            <div class="timeline-content ${status}">
-                                <div class="timeline-text">
-                                    <strong>${attempt.subject}</strong> - ${attempt.topic}<br>
-                                    Score: <span class="score">${attempt.score}/${attempt.outOf}</span> (${accuracy}% accuracy)<br>
-                                    <span class="date">${relativeDate}</span>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                timelineContainer.innerHTML = html;
-            } catch (e) {
-                console.error('Error loading activity timeline:', e);
-            }
-        }
+    document.getElementById('takeQuizBtn').addEventListener('click', function() {
+      const quizzes = [
+        'Quiz 1 - Math',
+        'Quiz 2 - Science',
+        'Quiz 3 - English',
+        'Quiz 4 - History'
+      ];
+      const random = quizzes[Math.floor(Math.random() * quizzes.length)];
+      openQuiz(random);
+    });
 
-        // Initialize timeline on page load and when progress updates
-        window.addEventListener('load', () => {
-            setTimeout(populateActivityTimeline, 300);
-        });
-    </script>
+    // ==================== RESET ====================
+    document.getElementById('resetBtn').addEventListener('click', function() {
+      if (confirm('Reset all data? This cannot be undone.')) {
+        localStorage.removeItem(progressKey);
+        localStorage.removeItem(attemptsKey);
+        localStorage.removeItem('prepsense_seeded');
+        location.reload();
+      }
+    });
+
+    // ==================== INIT ====================
+    seedMockData();
+    renderDashboard();
+  </script>
 </body>
 </html>
