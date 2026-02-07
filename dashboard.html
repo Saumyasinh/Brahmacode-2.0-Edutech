@@ -1,3 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PrepSense AI — Student Dashboard</title>
+  <style>
+    :root{
+      --primary:#122C4F;
+      --bg:#FBF9E3;
+      --accent:#F0D637;
+      --secondary:#5B88B2;
+      --card-bg:#ffffff;
+      --muted:#6b7280;
+      --radius:12px;
+      --shadow: 0 6px 18px rgba(18,44,79,0.08);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial;background:var(--bg);color:var(--primary);}
+    /* Header */
+    .topbar{height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid rgba(18,44,79,0.06);background:linear-gradient(180deg,transparent,rgba(0,0,0,0.01));}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:700;font-size:18px}
+    .logo{width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,var(--secondary),var(--primary));display:flex;align-items:center;justify-content:center;color:white;font-weight:700}
+    .user-area{display:flex;align-items:center;gap:12px}
+    .avatar{width:40px;height:40px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+    .badge{background:linear-gradient(90deg,var(--accent),#ffd86a);Padding:6px 10px;border-radius:20px;font-weight:600;color:#122C4F}
+
+    /* Layout */
+    .container{display:grid;grid-template-columns:240px 1fr 320px;gap:24px;padding:28px;max-width:1200px;margin:24px auto}
+    aside.sidebar{background:var(--card-bg);padding:18px;border-radius:12px;box-shadow:var(--shadow);height:calc(100vh - 160px);position:sticky;top:24px;display:flex;flex-direction:column}
+    nav.menu{display:flex;flex-direction:column;gap:8px}
+    .menu a{display:flex;align-items:center;gap:12px;padding:10px;border-radius:8px;color:var(--primary);text-decoration:none;font-weight:600}
+    .menu a:hover{background:linear-gradient(90deg, rgba(18,44,79,0.04), transparent)}
+    .menu .logout{margin-top:auto;padding:10px;border-radius:8px;background:#ffeaa7;color:var(--primary);cursor:pointer;text-align:center;font-weight:700}
+
+    main{min-height:400px}
+    .grid{display:grid;grid-template-columns:1fr 320px;gap:20px}
+
+    /* Cards */
+    .card{background:var(--card-bg);padding:18px;border-radius:12px;box-shadow:var(--shadow)}
+    .welcome{display:flex;flex-direction:column;gap:12px;padding:20px;border-radius:14px;background:linear-gradient(135deg,#fff7d1,#ffffff)}
+    .welcome h1{margin:0;font-size:22px;color:var(--primary)}
+    .welcome p{margin:0;color:var(--muted)}
+    .cta{margin-top:8px;padding:10px 14px;background:var(--primary);color:#fff;border-radius:10px;border:none;cursor:pointer;font-weight:700}
+
+    .readiness{display:flex;flex-direction:column;align-items:center;gap:12px;padding:24px}
+    .radial{width:120px;height:120px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--accent) 0 68%, rgba(0,0,0,0.06) 68% 100%);box-shadow:inset 0 -6px 18px rgba(0,0,0,0.03)}
+    .radial .num{font-size:20px;font-weight:800;color:var(--primary)}
+    .status{color:var(--muted);font-weight:700}
+
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .stat{padding:12px;border-radius:10px;background:var(--card-bg);text-align:center}
+    .stat .big{font-size:20px;font-weight:800;color:var(--primary)}
+    .stat .lbl{color:var(--muted);font-weight:700}
+
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;text-align:left;border-bottom:1px solid rgba(18,44,79,0.06)}
+    th{color:var(--muted);font-weight:700}
+
+    .tag{padding:4px 8px;border-radius:8px;font-weight:700;font-size:12px}
+    .tag.weak{background:#ffe7e7;color:#b33}
+    .tag.excellent{background:#e6fff0;color:#0a7f3a}
+
+    /* Responsive */
+    @media (max-width:1000px){
+      .container{grid-template-columns:1fr;max-width:900px;padding:16px}
+      .container aside.sidebar{height:auto;position:relative}
+      .grid{grid-template-columns:1fr}
+      .radial{margin:auto}
+      .stats{grid-template-columns:repeat(2,1fr)}
+    }
+    @media (max-width:560px){
+      .stats{grid-template-columns:1fr}
+      .topbar{padding:0 12px}
+      .brand{font-size:16px}
+    }
+  </style>
+</head>
+<body>
+  <style>
+    /* Fresh student-only dashboard styles (no old class names) */
+    :root{--primary:#122C4F;--bg:#FBF9E3;--accent:#F0D637;--secondary:#5B88B2;--card:#fff;--muted:#6b7280;--shadow:0 8px 24px rgba(18,44,79,0.08);}
+    html,body{height:100%;margin:0;background:var(--bg);font-family:Inter,system-ui,Segoe UI,Roboto,Arial;color:var(--primary)}
+    .ds-top{height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:transparent;border-bottom:1px solid rgba(18,44,79,0.04)}
+    .ds-brand{display:flex;align-items:center;gap:12px;font-weight:800}
+    .ds-logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--secondary),var(--primary));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800}
+    .ds-user{display:flex;align-items:center;gap:12px}
+    .ds-avatar{width:40px;height:40px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+    .ds-badge{background:linear-gradient(90deg,var(--accent),#ffd86a);padding:6px 10px;border-radius:20px;font-weight:700;color:var(--primary)}
+
+    .ds-layout{display:grid;grid-template-columns:220px 1fr;gap:20px;max-width:1200px;margin:22px auto;padding:0 16px}
+    .ds-sidebar{background:var(--card);padding:16px;border-radius:12px;box-shadow:var(--shadow);display:flex;flex-direction:column;height:calc(100vh - 140px);position:sticky;top:60px}
+    .ds-nav{display:flex;flex-direction:column;gap:8px}
+    .ds-link{padding:10px;border-radius:8px;text-decoration:none;color:var(--primary);font-weight:700}
+    .ds-link:hover{background:rgba(18,44,79,0.03)}
+    .ds-logout{margin-top:auto;padding:10px;border-radius:8px;background:#ffd;cursor:pointer;text-align:center;font-weight:800}
+
+    .ds-main{min-height:400px}
+    .ds-grid{display:grid;grid-template-columns:1fr 320px;gap:18px}
+    .ds-card{background:var(--card);padding:18px;border-radius:12px;box-shadow:var(--shadow)}
+
+    .ds-welcome{padding:22px;border-radius:14px;background:linear-gradient(135deg,#fffdf0,#ffffff)}
+    .ds-welcome h2{margin:0 0 6px 0;font-size:20px}
+    .ds-welcome p{margin:0;color:var(--muted)}
+    .ds-cta{margin-top:12px;padding:10px 14px;background:var(--primary);color:white;border:none;border-radius:10px;font-weight:800;cursor:pointer}
+
+    .ds-readiness{display:flex;flex-direction:column;align-items:center;gap:12px}
+    .ds-circle{width:120px;height:120px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--accent) 0 68%, rgba(0,0,0,0.06) 68% 100%)}
+    .ds-num{font-size:22px;font-weight:900;color:var(--primary)}
+
+    .ds-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px}
+    .ds-stat{padding:12px;border-radius:10px;text-align:center}
+    .ds-stat .n{font-weight:900;font-size:18px}
+    .ds-stat .t{color:var(--muted);font-weight:700}
+
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    th,td{padding:10px;text-align:left;border-bottom:1px solid rgba(18,44,79,0.06)}
+    th{color:var(--muted);font-weight:800}
+
+    @media (max-width:980px){.ds-layout{grid-template-columns:1fr;padding:0 12px}.ds-grid{grid-template-columns:1fr}.ds-stats{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:520px){.ds-stats{grid-template-columns:1fr}.ds-top{padding:0 12px}}
+  </style>
+
+  <!-- Fresh body structure starts here -->
+  <header class="ds-top">
+    <div class="ds-brand"><div class="ds-logo">PS</div><div>PrepSense AI</div></div>
+    <div class="ds-user">
+      <div style="text-align:right">
+        <div id="ds-name" style="font-weight:800">Student</div>
+        <div style="font-size:12px;color:var(--muted)">Student</div>
+      </div>
+      <div class="ds-avatar" id="ds-avatar">S</div>
+      <div class="ds-badge" id="ds-badge">68%</div>
+    </div>
+  </header>
+
+  <div class="ds-layout">
+    <aside class="ds-sidebar">
+      <nav class="ds-nav">
+        <a class="ds-link" href="#">Home</a>
+        <a class="ds-link" href="#">Practice Quiz</a>
+        <a class="ds-link" href="#">Progress Report</a>
+        <a class="ds-link" href="#">Weak Topics</a>
+      </nav>
+      <div class="ds-logout" id="ds-logout">Logout</div>
+    </aside>
+
+    <main class="ds-main">
+      <div class="ds-grid">
+        <section>
+          <div class="ds-card ds-welcome">
+            <h2 id="ds-welcome">Welcome back, Student</h2>
+            <p id="ds-sub">Ready for your next quiz?</p>
+            <button class="ds-cta" id="ds-continue">Continue Practice</button>
+          </div>
+
+          <div class="ds-card">
+            <div style="font-weight:900;margin-bottom:8px">Statistics</div>
+            <div class="ds-stats">
+              <div class="ds-stat"><div class="n">1250</div><div class="t">Questions Practiced</div></div>
+              <div class="ds-stat"><div class="n">85%</div><div class="t">Overall Accuracy</div></div>
+              <div class="ds-stat"><div class="n">Physics</div><div class="t">Weakest Subject</div></div>
+              <div class="ds-stat"><div class="n">32/50</div><div class="t">Predicted Score</div></div>
+            </div>
+          </div>
+
+          <div class="ds-card">
+            <div style="font-weight:900;margin-bottom:8px">Recent Attempts</div>
+            <table>
+              <thead><tr><th>Subject</th><th>Topic</th><th>Score</th><th>Date</th></tr></thead>
+              <tbody>
+                <tr><td>Physics</td><td>Motion</td><td>8/10</td><td>2026-02-05</td></tr>
+                <tr><td>Maths</td><td>Trigonometry</td><td>6/10</td><td>2026-02-03</td></tr>
+                <tr><td>Chemistry</td><td>Acids &amp; Bases</td><td>9/10</td><td>2026-02-01</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <aside>
+          <div class="ds-card ds-readiness">
+            <div style="font-weight:900">Exam Readiness</div>
+            <div class="ds-circle"><div class="ds-num" id="ds-readiness">68%</div></div>
+            <div style="font-weight:800;color:var(--muted)">Needs Revision</div>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Access control and dynamic population (fresh JS)
+    (function(){
+      const role = localStorage.getItem('role');
+      if(role !== 'student'){
+        window.location.href = 'index.html';
+        return;
+      }
+
+      // Derive student name: prefer currentUser.fullName, else local studentID
+      let studentName = 'Student';
+      try{
+        const cu = JSON.parse(localStorage.getItem('currentUser') || 'null');
+        if(cu && cu.fullName) studentName = cu.fullName;
+        else if(localStorage.getItem('studentID')) studentName = localStorage.getItem('studentID');
+      }catch(e){ if(localStorage.getItem('studentID')) studentName = localStorage.getItem('studentID'); }
+
+      document.getElementById('ds-name').textContent = studentName;
+      document.getElementById('ds-welcome').textContent = `Welcome back, ${studentName}`;
+      const avatar = studentName.split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase();
+      document.getElementById('ds-avatar').textContent = avatar;
+
+      const readiness = localStorage.getItem('readiness') || '68';
+      document.getElementById('ds-readiness').textContent = readiness + '%';
+      document.getElementById('ds-badge').textContent = readiness + '%';
+
+      document.getElementById('ds-logout').addEventListener('click', ()=>{
+        localStorage.clear();
+        window.location.href = 'index.html';
+      });
+
+      document.getElementById('ds-continue').addEventListener('click', ()=>{
+        // prefer practice.html if exists
+        const target = 'practice.html';
+        fetch(target,{method:'HEAD'}).then(()=>{location.href = target}).catch(()=>{alert('Practice page not available in this demo.');});
+      });
+    })();
+  </script>
+
+</body>
+</html>
 <!DOCTYPE html>
 <html lang="en">
 <head>
