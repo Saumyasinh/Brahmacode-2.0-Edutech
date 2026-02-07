@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PrepSense AI - Exam Readiness Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* ============================================
            RESET & BASE STYLES
@@ -700,6 +701,70 @@
             pointer-events: none;
         }
 
+        /* ANALYTICS CHARTS */
+        .analytics-section {
+            grid-column: 1 / -1;
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            padding: 30px;
+            margin-top: 20px;
+        }
+
+        .analytics-section h2 {
+            font-size: 18px;
+            color: var(--primary-dark);
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .chart-container {
+            background: var(--light-gray);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            position: relative;
+        }
+
+        .chart-canvas {
+            max-height: 280px;
+            width: 100%;
+        }
+
+        .chart-title {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        @media (max-width: 1024px) {
+            .charts-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         /* RESPONSIVE DESIGN */
         @media (max-width: 1200px) {
             .dashboard-grid {
@@ -1105,6 +1170,30 @@
                             </table>
                         </div>
                     </div>
+
+                    <!-- ANALYTICS CHARTS SECTION -->
+                    <div class="analytics-section">
+                        <h2>📊 Performance Analytics</h2>
+                        <div class="charts-grid">
+                            <!-- PIE CHART: Subject Accuracy -->
+                            <div class="chart-container">
+                                <div class="chart-title">Subject Accuracy</div>
+                                <canvas id="subjectAccuracyChart" class="chart-canvas"></canvas>
+                            </div>
+
+                            <!-- LINE CHART: Performance Over Time -->
+                            <div class="chart-container">
+                                <div class="chart-title">Performance Trend</div>
+                                <canvas id="performanceTrendChart" class="chart-canvas"></canvas>
+                            </div>
+
+                            <!-- BAR CHART: Topic Strengths -->
+                            <div class="chart-container">
+                                <div class="chart-title">Topic Strengths</div>
+                                <canvas id="topicStrengthsChart" class="chart-canvas"></canvas>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1384,6 +1473,205 @@
         });
         const origSelectSubject = window.selectSubject;
         window.selectSubject = function(s) { showLoader(); return origSelectSubject(s); };
+
+        /* ============================================
+           CHART INITIALIZATION & DATA LOADING
+           ============================================ */
+        let subjectAccuracyChart = null;
+        let performanceTrendChart = null;
+        let topicStrengthsChart = null;
+
+        function initializeCharts() {
+            const studentID = localStorage.getItem('studentID') || 'demo-student';
+            const progressKey = `progress_${studentID}`;
+            const attemptsKey = `attempts_${studentID}`;
+            
+            try {
+                const progress = JSON.parse(localStorage.getItem(progressKey) || '{}');
+                const attempts = JSON.parse(localStorage.getItem(attemptsKey) || '[]');
+                
+                // Only load charts if there's data
+                if (progress.quizzesAttempted > 0) {
+                    initializeSubjectAccuracyChart(progress);
+                    initializePerformanceTrendChart(attempts);
+                    initializeTopicStrengthsChart(progress);
+                }
+            } catch (e) {
+                console.error('Error loading chart data:', e);
+            }
+        }
+
+        function initializeSubjectAccuracyChart(progress) {
+            if (!progress.subjectStats) return;
+            
+            const labels = [];
+            const data = [];
+            const colors = ['#F0D637', '#5B88B2', '#4caf50', '#ff6b6b'];
+            const subjects = Object.keys(progress.subjectStats);
+            
+            subjects.forEach(subject => {
+                const stats = progress.subjectStats[subject];
+                if (stats.attempts > 0) {
+                    labels.push(subject);
+                    const accuracy = (stats.correct / stats.attempts) * 100;
+                    data.push(accuracy.toFixed(1));
+                }
+            });
+            
+            if (labels.length === 0) return;
+            
+            const ctx = document.getElementById('subjectAccuracyChart');
+            if (ctx && subjectAccuracyChart) subjectAccuracyChart.destroy();
+            
+            subjectAccuracyChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors.slice(0, labels.length),
+                        borderColor: '#FFFFFF',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { size: 12 }, color: '#122C4F', padding: 15 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => ` ${context.label}: ${context.parsed}%`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function initializePerformanceTrendChart(attempts) {
+            if (!Array.isArray(attempts) || attempts.length === 0) return;
+            
+            // Sort attempts by date and get last 10
+            const sortedAttempts = attempts
+                .sort((a, b) => new Date(a.date) - new Date(b.date))
+                .slice(-10);
+            
+            const labels = sortedAttempts.map((_, i) => `Attempt ${i + 1}`);
+            const scores = sortedAttempts.map(a => {
+                const accuracy = a.outOf > 0 ? (a.score / a.outOf) * 100 : 0;
+                return accuracy.toFixed(1);
+            });
+            
+            const ctx = document.getElementById('performanceTrendChart');
+            if (ctx && performanceTrendChart) performanceTrendChart.destroy();
+            
+            performanceTrendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Accuracy %',
+                        data: scores,
+                        borderColor: '#122C4F',
+                        backgroundColor: 'rgba(240, 214, 55, 0.15)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#F0D637',
+                        pointBorderColor: '#122C4F',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            labels: { font: { size: 12 }, color: '#122C4F' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { color: '#122C4F' },
+                            grid: { color: 'rgba(18, 44, 79, 0.05)' }
+                        },
+                        x: {
+                            ticks: { color: '#122C4F' },
+                            grid: { color: 'rgba(18, 44, 79, 0.05)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function initializeTopicStrengthsChart(progress) {
+            if (!progress.subjectStats) return;
+            
+            const labels = [];
+            const data = [];
+            const colors = ['#4caf50', '#5B88B2', '#F0D637', '#ff6b6b'];
+            const subjects = Object.keys(progress.subjectStats);
+            
+            subjects.forEach(subject => {
+                const stats = progress.subjectStats[subject];
+                if (stats.attempts > 0) {
+                    labels.push(subject);
+                    const accuracy = (stats.correct / stats.attempts) * 100;
+                    data.push(accuracy.toFixed(1));
+                }
+            });
+            
+            if (labels.length === 0) return;
+            
+            const ctx = document.getElementById('topicStrengthsChart');
+            if (ctx && topicStrengthsChart) topicStrengthsChart.destroy();
+            
+            topicStrengthsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Accuracy %',
+                        data: data,
+                        backgroundColor: colors.slice(0, labels.length),
+                        borderColor: '#122C4F',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { color: '#122C4F' },
+                            grid: { color: 'rgba(18, 44, 79, 0.05)' }
+                        },
+                        y: {
+                            ticks: { color: '#122C4F' },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize charts when DOM is ready
+        window.addEventListener('load', () => {
+            setTimeout(initializeCharts, 500);
+        });
     </script>
 </body>
 </html>
