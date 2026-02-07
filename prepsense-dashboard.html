@@ -632,6 +632,127 @@
             color: #4caf50;
         }
 
+        /* ACTIVITY TIMELINE */
+        .timeline-section {
+            grid-column: 1 / -1;
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            padding: 30px;
+            margin-top: 20px;
+        }
+
+        .timeline-section h2 {
+            font-size: 18px;
+            color: var(--primary-dark);
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        .timeline-list {
+            position: relative;
+            padding-left: 40px;
+        }
+
+        .timeline-list::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, #F0D637 0%, rgba(240, 214, 55, 0.2) 100%);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 24px;
+            padding-bottom: 8px;
+        }
+
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: -32px;
+            top: 2px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--white);
+            border: 3px solid #F0D637;
+            z-index: 2;
+        }
+
+        .timeline-marker.excellent {
+            border-color: #4caf50;
+        }
+
+        .timeline-marker.good {
+            border-color: #5B88B2;
+        }
+
+        .timeline-marker.weak {
+            border-color: #ff6b6b;
+        }
+
+        .timeline-content {
+            background: var(--light-gray);
+            border-radius: 12px;
+            padding: 16px 18px;
+            border-left: 3px solid #F0D637;
+        }
+
+        .timeline-content.excellent {
+            border-left-color: #4caf50;
+            background: rgba(76, 175, 80, 0.08);
+        }
+
+        .timeline-content.good {
+            border-left-color: #5B88B2;
+            background: rgba(91, 136, 178, 0.08);
+        }
+
+        .timeline-content.weak {
+            border-left-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.08);
+        }
+
+        .timeline-text {
+            font-size: 14px;
+            color: var(--primary-dark);
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        .timeline-text .score {
+            font-weight: 700;
+            color: var(--accent-yellow);
+        }
+
+        .timeline-text .date {
+            font-size: 12px;
+            color: #7a8290;
+            margin-top: 6px;
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .timeline-section {
+                padding: 20px;
+            }
+
+            .timeline-list {
+                padding-left: 30px;
+            }
+
+            .timeline-marker {
+                left: -24px;
+            }
+        }
+
         /* EMPTY STATE */
         .empty-state-container {
             display: none;
@@ -1194,6 +1315,14 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- ACTIVITY TIMELINE SECTION -->
+                    <div class="timeline-section">
+                        <h2>⏱️ Recent Activity Timeline</h2>
+                        <div class="timeline-list" id="activityTimeline">
+                            <!-- Timeline items populated by JavaScript -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1671,6 +1800,88 @@
         // Initialize charts when DOM is ready
         window.addEventListener('load', () => {
             setTimeout(initializeCharts, 500);
+        });
+
+        /* ============================================
+           ACTIVITY TIMELINE
+           Displays last 5 quiz attempts
+           ============================================ */
+        
+        function getRelativeDate(dateString) {
+            const now = new Date();
+            const attemptDate = new Date(dateString);
+            const diffTime = now - attemptDate;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 0) {
+                const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+                if (diffHours === 0) return 'Just now';
+                return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+            } else if (diffDays === 1) {
+                return 'Yesterday';
+            } else if (diffDays < 7) {
+                return `${diffDays} days ago`;
+            } else {
+                return attemptDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: attemptDate.getFullYear() !== now.getFullYear() ? 'numeric' : undefined });
+            }
+        }
+
+        function getScoreStatus(score, outOf) {
+            const accuracy = (score / outOf) * 100;
+            if (accuracy >= 80) return 'excellent';
+            if (accuracy >= 60) return 'good';
+            return 'weak';
+        }
+
+        function populateActivityTimeline() {
+            const studentID = localStorage.getItem('studentID') || 'demo-student';
+            const attemptsKey = `attempts_${studentID}`;
+            
+            try {
+                const attempts = JSON.parse(localStorage.getItem(attemptsKey) || '[]');
+                const timelineContainer = document.getElementById('activityTimeline');
+                
+                if (!timelineContainer) return;
+                
+                // Sort by date descending (newest first) and get last 5
+                const recentAttempts = attempts
+                    .sort((a, b) => new Date(b.date) - new Date(a.date))
+                    .slice(0, 5);
+                
+                if (recentAttempts.length === 0) {
+                    timelineContainer.innerHTML = '<p style="color: #7a8290; text-align: center; padding: 20px;">No quiz attempts yet. Start with a quiz to see your activity!</p>';
+                    return;
+                }
+                
+                let html = '';
+                recentAttempts.forEach(attempt => {
+                    const status = getScoreStatus(attempt.score, attempt.outOf);
+                    const relativeDate = getRelativeDate(attempt.date);
+                    const accuracy = ((attempt.score / attempt.outOf) * 100).toFixed(0);
+                    
+                    html += `
+                        <div class="timeline-item">
+                            <div class="timeline-marker ${status}"></div>
+                            <div class="timeline-content ${status}">
+                                <div class="timeline-text">
+                                    <strong>${attempt.subject}</strong> - ${attempt.topic}<br>
+                                    Score: <span class="score">${attempt.score}/${attempt.outOf}</span> (${accuracy}% accuracy)<br>
+                                    <span class="date">${relativeDate}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                timelineContainer.innerHTML = html;
+            } catch (e) {
+                console.error('Error loading activity timeline:', e);
+            }
+        }
+
+        // Initialize timeline on page load and when progress updates
+        window.addEventListener('load', () => {
+            setTimeout(populateActivityTimeline, 300);
         });
     </script>
 </body>
