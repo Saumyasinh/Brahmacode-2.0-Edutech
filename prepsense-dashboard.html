@@ -965,107 +965,142 @@
 
     <script>
         /* ============================================
-           DASHBOARD DATA & LOGIC
+           DASHBOARD DATA & LOGIC (workable)
+           - Uses localStorage.currentUser / studentAccounts
+           - Seeds demo attempts if none exist for the student
            ============================================ */
 
-        // Store dashboard values in variables
-        const dashboardData = {
-            studentName: 'Aryan Patel',
-            questions: 1250,
-            accuracy: 85,
-            readiness: 68,
-            weakestSubject: 'Physics',
-            predictedScore: 32,
-            maxScore: 50,
-        };
-
-        /* ============================================
-           DOM CONTENT LOADED - INITIALIZE DASHBOARD
-           ============================================ */
+        // Access control on load
         document.addEventListener('DOMContentLoaded', function() {
-            initializeDashboard();
+            const storedRole = (localStorage.getItem('role') || '').toLowerCase();
+            let currentUser = null;
+            try{ currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null'); }catch(e){ currentUser = null }
+            const role = storedRole || (currentUser && currentUser.role) || '';
+            if(role !== 'student'){
+                window.location.href = 'index.html';
+                return;
+            }
+
+            initializeDashboard(currentUser);
         });
 
-        function initializeDashboard() {
-            // Inject values into the DOM
-            updateDashboardValues();
+        function initializeDashboard(currentUser){
+            // Resolve student id and name
+            const studentId = (currentUser && currentUser.studentId) || localStorage.getItem('studentID') || 'demo-student';
+            let studentName = (currentUser && currentUser.fullName) || localStorage.getItem('studentName') || null;
 
-            // Update circular progress indicator
-            updateCircularProgress();
+            // Try to find a matching student account
+            try{
+                const accounts = JSON.parse(localStorage.getItem('studentAccounts') || '[]');
+                const found = accounts.find(a=>a.studentId === studentId);
+                if(found && !studentName) studentName = found.fullName || found.studentId;
+            }catch(e){/* ignore */}
 
-            // Update progress bars
-            updateProgressBars();
-        }
+            if(!studentName) studentName = studentId;
 
-        function updateDashboardValues() {
-            // Update questions practiced
-            document.getElementById('questions-value').textContent = 
-                dashboardData.questions.toLocaleString();
+            // Update header profile
+            const avatarEl = document.querySelector('.student-avatar');
+            const nameEl = document.querySelector('.student-name');
+            if(avatarEl) avatarEl.textContent = studentName.split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase();
+            if(nameEl) nameEl.textContent = studentName;
 
-            // Update overall accuracy
-            document.getElementById('accuracy-value').textContent = 
-                dashboardData.accuracy + '%';
+            // Load or seed attempts
+            const attemptsKey = `attempts_${studentId}`;
+            let attempts = [];
+            try{ attempts = JSON.parse(localStorage.getItem(attemptsKey) || 'null') || []; }catch(e){ attempts = []; }
+            if(!attempts || attempts.length === 0){
+                attempts = [
+                    {subject:'Physics', topic:'Motion', score:8, outOf:10, date:'2026-02-05'},
+                    {subject:'Maths', topic:'Trigonometry', score:6, outOf:10, date:'2026-02-03'},
+                    {subject:'Chemistry', topic:'Acids & Bases', score:9, outOf:10, date:'2026-02-01'}
+                ];
+                try{ localStorage.setItem(attemptsKey, JSON.stringify(attempts)); }catch(e){}
+            }
 
-            // Update weakest subject
-            document.getElementById('weakest-subject').textContent = 
-                dashboardData.weakestSubject;
+            // Compute statistics
+            const totalQuestions = attempts.reduce((s,a)=>s + (a.outOf || 0), 0) || 0;
+            const totalCorrect = attempts.reduce((s,a)=>s + (a.score || 0), 0) || 0;
+            const questionsPracticed = totalQuestions;
+            const accuracy = totalQuestions ? Math.round((totalCorrect/totalQuestions)*100) : 0;
+            const bySubject = {};
+            attempts.forEach(a=>{
+                if(!bySubject[a.subject]) bySubject[a.subject] = {correct:0,total:0};
+                bySubject[a.subject].correct += a.score || 0;
+                bySubject[a.subject].total += a.outOf || 0;
+            });
+            let weakest = '—'; let minRate = 1;
+            Object.keys(bySubject).forEach(sub=>{
+                const obj = bySubject[sub];
+                const rate = obj.total ? obj.correct/obj.total : 1;
+                if(rate < minRate){ minRate = rate; weakest = sub; }
+            });
+            const predicted = Math.round((accuracy/100) * 50);
+            const readiness = localStorage.getItem('readiness') || String(accuracy || 68);
 
-            // Update predicted score
-            document.getElementById('predicted-score').textContent = 
-                dashboardData.predictedScore + '/' + dashboardData.maxScore;
+            // Update DOM values
+            const qEl = document.getElementById('questions-value'); if(qEl) qEl.textContent = (questionsPracticed || 0).toLocaleString();
+            const aEl = document.getElementById('accuracy-value'); if(aEl) aEl.textContent = accuracy + '%';
+            const wEl = document.getElementById('weakest-subject'); if(wEl) wEl.textContent = weakest;
+            const pEl = document.getElementById('predicted-score'); if(pEl) pEl.textContent = predicted + '/50';
+            const bar = document.querySelector('.progress-bar'); if(bar) bar.style.width = Math.min(100, Math.round((predicted/50)*100)) + '%';
+            const readEl = document.getElementById('readiness-percentage'); if(readEl) readEl.textContent = readiness + '%';
+            const badge = document.getElementById('badge-readiness'); if(badge) badge.textContent = readiness;
 
-            // Update exam readiness percentage
-            document.getElementById('readiness-percentage').textContent = 
-                dashboardData.readiness + '%';
-
-            // Update badge
-            document.getElementById('badge-readiness').textContent = 
-                dashboardData.readiness;
-        }
-
-        function updateCircularProgress() {
-            const percentage = dashboardData.readiness;
-            const degrees = (percentage / 100) * 360;
-
+            // Update circular progress
+            const degrees = (parseInt(readiness,10) / 100) * 360;
             const progressCircle = document.querySelector('.progress-circle');
-            progressCircle.style.background = `conic-gradient(
-                var(--accent-yellow) 0deg,
-                var(--accent-yellow) ${degrees}deg,
-                #e5e5e5 ${degrees}deg,
-                #e5e5e5 360deg
-            )`;
+            if(progressCircle) progressCircle.style.background = `conic-gradient(var(--accent-yellow) 0deg, var(--accent-yellow) ${degrees}deg, #e5e5e5 ${degrees}deg, #e5e5e5 360deg)`;
+
+            // Fill recent attempts table
+            const tbody = document.querySelector('.recent-attempts table tbody');
+            if(tbody){
+                tbody.innerHTML = '';
+                attempts.slice(0,10).forEach(a=>{
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>${escapeHtml(a.subject)}</td><td>${escapeHtml(a.topic)}</td><td class="score-cell">${a.score}/${a.outOf}</td><td>${escapeHtml(a.date)}</td><td>${getStatusTag(a)}</td>`;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            // Wire interactions
+            document.querySelectorAll('.nav-link').forEach(link=>{
+                link.addEventListener('click', function(e){ e.preventDefault(); handleNavClick(e); });
+            });
+            const logoutBtn = document.querySelector('.logout-btn');
+            if(logoutBtn) logoutBtn.addEventListener('click', function(e){ e.preventDefault(); handleLogout(e, studentName); });
+            const continueBtn = document.querySelector('.welcome-card .btn-primary');
+            if(continueBtn) continueBtn.addEventListener('click', function(){ goToPractice(); });
         }
 
-        function updateProgressBars() {
-            const predictedScorePercentage = 
-                (dashboardData.predictedScore / dashboardData.maxScore) * 100;
-
-            const progressBar = document.querySelector('.progress-bar');
-            progressBar.style.width = predictedScorePercentage + '%';
+        function getStatusTag(attempt){
+            const pct = attempt.outOf ? (attempt.score/attempt.outOf)*100 : 0;
+            if(pct >= 90) return '<span class="tag excellent">Excellent</span>';
+            if(pct < 70) return '<span class="tag weak">Weak</span>';
+            return '';
         }
 
-        /* ============================================
-           USER INTERACTIONS
-           ============================================ */
+        function escapeHtml(str){ return String(str||'').replace(/[&<>"']/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"})[ch]); }
+
+        function goToPractice(){
+            const target = 'practice.html';
+            fetch(target,{method:'HEAD'}).then(()=>{ location.href = target; }).catch(()=>{ alert('Practice page not available.'); });
+        }
 
         function handleNavClick(event) {
             event.preventDefault();
-
-            // Remove active class from all nav links
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.classList.remove('active');
-            });
-
-            // Add active class to clicked link
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
             event.currentTarget.classList.add('active');
-
-            console.log('Navigation clicked:', event.currentTarget.textContent);
+            const txt = event.currentTarget.textContent.trim();
+            if(txt === 'Practice Quiz') return goToPractice();
+            alert(txt + ' page not implemented in demo.');
         }
 
-        function handleLogout(event) {
-            event.preventDefault();
-            alert('Logging out from PrepSense AI. Goodbye, ' + dashboardData.studentName + '!');
-            console.log('User logged out');
+        function handleLogout(event, name){
+            event && event.preventDefault();
+            // clear session keys
+            try{ localStorage.removeItem('currentUser'); localStorage.removeItem('role'); localStorage.removeItem('studentID'); localStorage.removeItem('studentName'); }catch(e){}
+            // redirect
+            window.location.href = 'index.html';
         }
     </script>
 </body>
