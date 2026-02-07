@@ -639,7 +639,13 @@
             plans.slice().reverse().forEach(p => {
                 const date = new Date(p.date).toLocaleString();
                 const topics = (p.weakTopics && p.weakTopics.length) ? p.weakTopics.join(', ') : 'General';
-                html += `<button class="resource-btn" onclick='displayPlan(${JSON.stringify(p).replace(/'/g, "\\'")})'>${p.subject} • ${topics} • ${date.split(',')[0]}</button>`;
+                html += `<div style="display:flex; gap:8px; align-items:center;">`;
+                html += `<button class="resource-btn" onclick="viewPlanById('${p.id}')">View</button>`;
+                html += `<button class="resource-btn" onclick="rerunPlan('${p.id}')">Re-run Plan</button>`;
+                html += `<button class="resource-btn" onclick="renamePlan('${p.id}')">Rename</button>`;
+                html += `<button class="resource-btn" style="background:#ff6b6b;" onclick="deletePlan('${p.id}')">Delete</button>`;
+                html += `<div style="padding:8px 12px; border-radius:8px; background:#fff; color:var(--primary-dark); font-weight:600; margin-left:6px;">${p.subject} • ${topics} • ${date.split(',')[0]}</div>`;
+                html += `</div>`;
             });
             html += '</div>';
             container.innerHTML = html;
@@ -656,6 +662,53 @@
                 planHTML += `\n            <div class="day-plan">\n                <div class="day-header">\n                    <div class="day-badge">Day ${d.day}</div>\n                    <div class="day-info">\n                        <h3>${d.title}</h3>\n                        <p>${subject} - ${topic} | ⏱ ${d.duration} minutes</p>\n                    </div>\n                </div>\n\n                <div class="topics-list">\n                    <div class="topic-item">\n                        <span class="topic-name">✓ Review core concepts from notes</span>\n                        <span class="duration">15 min</span>\n                    </div>\n                    <div class="topic-item">\n                        <span class="topic-name">✓ Watch explanation videos</span>\n                        <span class="duration">20 min</span>\n                    </div>\n                    <div class="topic-item">\n                        <span class="topic-name">✓ ${res.practice}</span>\n                        <span class="duration">10 min</span>\n                    </div>\n                </div>\n\n                <div class="resources">\n                    <strong>📚 Resources:</strong>\n                    <div style="margin-top: 10px;">\n                        <a href="${res.youtube}" target="_blank" class="resource-btn">🎥 YouTube Videos</a>\n                        <button class="resource-btn" onclick="alert('📖\\n\\n${res.notes.replace(/'/g, "\\'") }')">📖 Notes Summary</button>\n                    </div>\n                </div>\n            </div>\n            `;
             });
             document.getElementById('studyPlanDays').innerHTML = planHTML;
+        }
+
+        function getPlanById(id) {
+            const plans = getSavedPlans();
+            return plans.find(p => p.id === id);
+        }
+
+        function viewPlanById(id) {
+            const p = getPlanById(id);
+            if (p) {
+                displayPlan(p);
+            }
+        }
+
+        function rerunPlan(id) {
+            const p = getPlanById(id);
+            if (!p) return;
+            const topics = (p.weakTopics || []).join(',');
+            window.location.href = `quiz.html?subject=${encodeURIComponent(p.subject)}&planTopics=${encodeURIComponent(topics)}`;
+        }
+
+        function deletePlan(id) {
+            const studentID = localStorage.getItem('studentID') || 'demo-student';
+            const key = `studyPlans_${studentID}`;
+            let plans = getSavedPlans();
+            plans = plans.filter(p => p.id !== id);
+            try { localStorage.setItem(key, JSON.stringify(plans)); } catch(e) {}
+            renderSavedPlans();
+            document.getElementById('studyPlanDays').innerHTML = '';
+        }
+
+        function renamePlan(id) {
+            const p = getPlanById(id);
+            if (!p) return;
+            const newName = prompt('Rename plan subject/title', p.subject || '');
+            if (!newName) return;
+            p.subject = newName;
+            const studentID = localStorage.getItem('studentID') || 'demo-student';
+            const key = `studyPlans_${studentID}`;
+            let plans = getSavedPlans();
+            const idx = plans.findIndex(x => x.id === id);
+            if (idx !== -1) {
+                plans[idx] = p;
+                try { localStorage.setItem(key, JSON.stringify(plans)); } catch(e) {}
+            }
+            renderSavedPlans();
+            displayPlan(p);
         }
 
         function generateNewPlan() {

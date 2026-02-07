@@ -584,15 +584,21 @@
         }
 
         function selectQuizQuestions() {
+            // Allow planTopics to be passed via URL (re-run plan). Format: planTopics=Topic1,Topic2
+            const params = new URLSearchParams(window.location.search);
+            const planTopicsParam = params.get('planTopics');
+
             const weakTopics = getWeakTopics();
             let topicsToUse = [];
 
-            // Check if there are weak topics in current subject
-            const weakInSubject = weakTopics.filter(w => w.subject === currentSubject);
-            
-            if (weakInSubject.length > 0) {
-                // 70% from weak topic, 30% random
-                topicsToUse = weakInSubject.slice(0, 2);
+            if (planTopicsParam && planTopicsParam.length > 0) {
+                topicsToUse = planTopicsParam.split(',').map(t => t.trim()).filter(Boolean);
+            } else {
+                // Check if there are weak topics in current subject
+                const weakInSubject = weakTopics.filter(w => w.subject === currentSubject);
+                if (weakInSubject.length > 0) {
+                    topicsToUse = weakInSubject.slice(0, 2).map(w => w.topic);
+                }
             }
 
             // Get available topics
@@ -601,16 +607,18 @@
                 topicsToUse = allTopics;
             }
 
+            // Set currentTopic to first selected topic for display
+            currentTopic = topicsToUse[0] || allTopics[0] || currentTopic;
+
             // Collect and shuffle questions
             let questionsPool = [];
-            topicsToUse.forEach(topicObj => {
-                const topicName = typeof topicObj === 'string' ? topicObj : topicObj.topic;
+            topicsToUse.forEach(topicName => {
                 if (quizData[currentSubject] && quizData[currentSubject][topicName]) {
                     questionsPool = questionsPool.concat(quizData[currentSubject][topicName]);
                 }
             });
 
-            // If no weak topics, get questions from first topic
+            // If no questions found, fallback to first topic
             if (questionsPool.length === 0 && allTopics.length > 0) {
                 currentTopic = allTopics[0];
                 questionsPool = quizData[currentSubject][currentTopic] || [];
