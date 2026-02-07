@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz - PrepSense AI</title>
+    <style>
+        :root {
+            --primary-dark: #122C4F;
+            --background-cream: #FBF9E3;
+            --accent-yellow: #F0D637;
+            --accent-blue: #5B88B2;
+            --white: #FFFFFF;
+            --light-gray: #F5F3ED;
+            --shadow-sm: 0 2px 8px rgba(18, 44, 79, 0.08);
+            --shadow-md: 0 4px 16px rgba(18, 44, 79, 0.12);
+            --shadow-lg: 0 8px 24px rgba(18, 44, 79, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-cream);
+            color: var(--primary-dark);
+        }
+
+        .quiz-container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        .quiz-sidebar {
+            width: 250px;
+            background: linear-gradient(180deg, var(--primary-dark) 0%, #0f1f37 100%);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .quiz-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 30px;
+            color: var(--accent-yellow);
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .quiz-brand-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--accent-yellow);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-dark);
+            font-weight: bold;
+        }
+
+        /* MAIN QUIZ AREA */
+        .quiz-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .quiz-header {
+            background-color: var(--white);
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+            border-bottom: 1px solid rgba(18, 44, 79, 0.05);
+        }
+
+        .quiz-header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .quiz-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .quiz-subject {
+            font-size: 14px;
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+
+        .quiz-timer {
+            background: linear-gradient(135deg, var(--accent-yellow) 0%, #f5c61a 100%);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        /* QUIZ CONTENT */
+        .quiz-content {
+            padding: 40px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .quiz-card {
+            background: var(--white);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            max-width: 700px;
+            width: 100%;
+        }
+
+        .question-progress {
+            font-size: 12px;
+            color: #7a8290;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .question-text {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .option-btn {
+            padding: 16px;
+            border: 2px solid rgba(18, 44, 79, 0.1);
+            border-radius: 12px;
+            background: var(--white);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--primary-dark);
+        }
+
+        .option-btn:hover {
+            background-color: rgba(240, 214, 55, 0.1);
+            border-color: var(--accent-yellow);
+        }
+
+        .option-btn.selected {
+            background-color: var(--accent-yellow);
+            border-color: var(--accent-yellow);
+            font-weight: 700;
+        }
+
+        .option-btn.correct {
+            background-color: #d4edda;
+            border-color: #28a745;
+        }
+
+        .option-btn.incorrect {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+        }
+
+        .quiz-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: space-between;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-dark);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0a1630;
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--primary-dark);
+            border: 2px solid rgba(18, 44, 79, 0.1);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-yellow);
+            background-color: rgba(240, 214, 55, 0.05);
+        }
+
+        /* RESULT MODAL */
+        .result-card {
+            display: none;
+            text-align: center;
+        }
+
+        .result-card.show {
+            display: block;
+        }
+
+        .result-score {
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--accent-yellow);
+            margin-bottom: 20px;
+        }
+
+        .result-label {
+            font-size: 14px;
+            color: #7a8290;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 20px;
+        }
+
+        .feedback-text {
+            font-size: 14px;
+            color: var(--primary-dark);
+            line-height: 1.8;
+            margin: 20px 0;
+            background-color: rgba(240, 214, 55, 0.1);
+            padding: 16px;
+            border-left: 4px solid var(--accent-yellow);
+            border-radius: 8px;
+            text-align: left;
+        }
+
+        .tips-box {
+            background-color: #f0f8ff;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        .tips-box strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .weak-topic-tag {
+            display: inline-block;
+            background-color: #ff9a56;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .quiz-container {
+                flex-direction: column;
+            }
+
+            .quiz-sidebar {
+                width: 100%;
+                height: auto;
+                padding: 15px;
+                flex-direction: row;
+            }
+
+            .quiz-header {
+                flex-wrap: wrap;
+                padding: 15px 20px;
+            }
+
+            .quiz-content {
+                padding: 20px;
+            }
+
+            .quiz-card {
+                padding: 25px;
+            }
+
+            .result-score {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <!-- SIDEBAR -->
+        <aside class="quiz-sidebar">
+            <div class="quiz-brand">
+                <div class="quiz-brand-icon">P</div>
+                <span>PrepSense</span>
+            </div>
+            <div style="flex: 1;"></div>
+            <a href="prepsense-dashboard.html" style="color: #a8b8cc; text-decoration: none; padding: 12px; text-align: center; border-radius: 8px; font-weight: 600; transition: all 0.3s;">← Back to Dashboard</a>
+        </aside>
+
+        <!-- MAIN AREA -->
+        <div class="quiz-main">
+            <!-- HEADER -->
+            <header class="quiz-header">
+                <div class="quiz-header-left">
+                    <div>
+                        <div class="quiz-title" id="quizTitle">Physics Quiz</div>
+                        <div class="quiz-subject" id="quizSubject">Motion</div>
+                    </div>
+                </div>
+                <div class="quiz-timer" id="quizTimer">⏱ Time: 00:00</div>
+            </header>
+
+            <!-- CONTENT -->
+            <div class="quiz-content">
+                <div class="quiz-card" id="quizCardContainer">
+                    <!-- QUESTION VIEW -->
+                    <div id="questionView">
+                        <div class="question-progress" id="questionProgress">Question 1/5</div>
+                        <div class="question-text" id="questionText">What is the SI unit of velocity?</div>
+                        <div class="options-grid" id="optionsGrid">
+                            <!-- Options will be inserted here -->
+                        </div>
+                        <div class="quiz-buttons">
+                            <button class="btn btn-secondary" onclick="goBack()">← Back</button>
+                            <button class="btn btn-primary" id="nextBtn" onclick="submitAnswer()" disabled>Submit Answer</button>
+                        </div>
+                    </div>
+
+                    <!-- RESULT VIEW -->
+                    <div id="resultView" class="result-card">
+                        <div class="result-score" id="resultScore">3/5</div>
+                        <div class="result-label">Your Score</div>
+                        
+                        <div class="feedback-text" id="feedbackText">
+                            You selected the wrong option. Let me explain...
+                        </div>
+
+                        <div class="tips-box" id="tipsBox">
+                            <strong>💡 Key Concept:</strong>
+                            <div id="tipsContent">Velocity is a vector quantity with both magnitude and direction.</div>
+                        </div>
+
+                        <div id="weakTopicContainer"></div>
+
+                        <div class="quiz-buttons">
+                            <button class="btn btn-primary" onclick="nextQuestion()">Next Question →</button>
+                        </div>
+                    </div>
+
+                    <!-- FINAL RESULTS -->
+                    <div id="finalResultsView" class="result-card">
+                        <div class="result-score" id="finalScore">4/5</div>
+                        <div class="result-label">Quiz Complete</div>
+                        
+                        <div style="margin: 30px 0;">
+                            <p style="font-size: 14px; color: #7a8290; margin-bottom: 10px;">Weak Topic Detected:</p>
+                            <div id="finalWeakTopics" style="margin: 15px 0;"></div>
+                        </div>
+
+                        <div class="quiz-buttons">
+                            <button class="btn btn-secondary" onclick="backToDashboard()">Back to Dashboard</button>
+                            <button class="btn btn-primary" onclick="generateStudyPlan()">Generate Study Plan →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // QUIZ DATA BY SUBJECT
+        const quizData = {
+            Physics: {
+                Motion: [
+                    {
+                        question: "What is the SI unit of velocity?",
+                        options: ["m/s", "km", "m", "s"],
+                        correct: 0,
+                        explanation: "Velocity is measured in meters per second (m/s), which represents distance traveled per unit time."
+                    },
+                    {
+                        question: "Which of the following is a scalar quantity?",
+                        options: ["Displacement", "Velocity", "Speed", "Acceleration"],
+                        correct: 2,
+                        explanation: "Speed is a scalar quantity as it only has magnitude. Displacement, velocity, and acceleration are vectors."
+                    },
+                    {
+                        question: "If an object moves with constant velocity, its acceleration is:",
+                        options: ["Positive", "Negative", "Zero", "Variable"],
+                        correct: 2,
+                        explanation: "When velocity is constant, there is no change in velocity, so acceleration = 0."
+                    },
+                    {
+                        question: "What is the SI unit of acceleration?",
+                        options: ["m", "m/s", "m/s²", "km/h"],
+                        correct: 2,
+                        explanation: "Acceleration is the rate of change of velocity, measured in meters per second squared (m/s²)."
+                    },
+                    {
+                        question: "A car travels 100 m in 5 seconds. What is its average speed?",
+                        options: ["20 m/s", "500 m/s", "5 m/s", "100 m/s"],
+                        correct: 0,
+                        explanation: "Average speed = Total distance / Total time = 100 m / 5 s = 20 m/s."
+                    }
+                ]
+            },
+            Maths: {
+                Trigonometry: [
+                    {
+                        question: "What is sin(90°)?",
+                        options: ["0", "1", "√2/2", "-1"],
+                        correct: 1,
+                        explanation: "sin(90°) = 1. This is a fundamental trigonometric value."
+                    },
+                    {
+                        question: "What is cos(0°)?",
+                        options: ["0", "1", "-1", "∞"],
+                        correct: 1,
+                        explanation: "cos(0°) = 1. Cosine of 0 degrees is always 1."
+                    },
+                    {
+                        question: "Find tan(45°):",
+                        options: ["0", "1", "√3", "√2"],
+                        correct: 1,
+                        explanation: "tan(45°) = 1. At 45 degrees, sine and cosine are equal, so their ratio is 1."
+                    },
+                    {
+                        question: "What is the value of sin²θ + cos²θ?",
+                        options: ["0", "1", "2", "θ"],
+                        correct: 1,
+                        explanation: "This is the Pythagorean identity: sin²θ + cos²θ = 1 for all values of θ."
+                    },
+                    {
+                        question: "If tan(θ) = 3/4, what is the value of sin(θ)?",
+                        options: ["3/5", "4/5", "3/4", "5/3"],
+                        correct: 0,
+                        explanation: "Using the Pythagorean theorem: if tan(θ) = 3/4, then sin(θ) = 3/5 and cos(θ) = 4/5."
+                    }
+                ]
+            },
+            Chemistry: {
+                "Acids & Bases": [
+                    {
+                        question: "What is the pH of a neutral solution?",
+                        options: ["0", "7", "14", "1"],
+                        correct: 1,
+                        explanation: "A neutral solution has pH = 7. pH < 7 is acidic and pH > 7 is basic."
+                    },
+                    {
+                        question: "Which of the following is a strong acid?",
+                        options: ["Acetic acid", "Hydrochloric acid", "Carbonic acid", "Weak acid"],
+                        correct: 1,
+                        explanation: "Hydrochloric acid (HCl) is a strong acid that completely dissociates in water."
+                    },
+                    {
+                        question: "What is the conjugate base of HCl?",
+                        options: ["Cl⁻", "H⁺", "ClO⁻", "HCl₂⁻"],
+                        correct: 0,
+                        explanation: "When HCl loses a proton, it forms Cl⁻, which is its conjugate base."
+                    },
+                    {
+                        question: "A solution with pH = 2 is:",
+                        options: ["Basic", "Neutral", "Acidic", "Alkaline"],
+                        correct: 2,
+                        explanation: "pH < 7 indicates an acidic solution. pH = 2 means a strongly acidic solution."
+                    },
+                    {
+                        question: "What is the pH of a solution with [H⁺] = 10⁻⁵?",
+                        options: ["5", "9", "14", "-5"],
+                        correct: 0,
+                        explanation: "pH = -log[H⁺] = -log(10⁻⁵) = 5."
+                    }
+                ]
+            },
+            Biology: {
+                Photosynthesis: [
+                    {
+                        question: "What is the primary pigment in photosynthesis?",
+                        options: ["Carotenoid", "Chlorophyll", "Xanthophyll", "Hemoglobin"],
+                        correct: 1,
+                        explanation: "Chlorophyll is the main pigment that absorbs light energy in photosynthesis."
+                    },
+                    {
+                        question: "Where do the light reactions of photosynthesis occur?",
+                        options: ["Stroma", "Thylakoid membrane", "Mitochondria", "Nucleus"],
+                        correct: 1,
+                        explanation: "Light reactions occur in the thylakoid membrane of the chloroplast."
+                    },
+                    {
+                        question: "What is produced during the light reactions?",
+                        options: ["Glucose", "ATP and NADPH", "CO₂", "Water"],
+                        correct: 1,
+                        explanation: "Light reactions produce ATP and NADPH, which are used in the Calvin cycle."
+                    },
+                    {
+                        question: "The Calvin cycle produces:",
+                        options: ["ATP", "NADPH", "Glucose", "O₂"],
+                        correct: 2,
+                        explanation: "The Calvin cycle (dark reactions) uses ATP and NADPH to produce glucose."
+                    },
+                    {
+                        question: "What is the overall equation for photosynthesis?",
+                        options: ["6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂", "C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O", "CO₂ + H₂O → C₂H₄O", "6O₂ → 6CO₂ + H₂O"],
+                        correct: 0,
+                        explanation: "6CO₂ + 6H₂O + light energy → C₆H₁₂O₆ + 6O₂. This shows glucose and oxygen production."
+                    }
+                ]
+            }
+        };
+
+        // STATE
+        let currentSubject = 'Physics';
+        let currentTopic = 'Motion';
+        let currentQuestionIndex = 0;
+        let currentQuestions = [];
+        let selectedAnswers = [];
+        let scores = [];
+        let startTime = Date.now();
+
+        // INIT
+        document.addEventListener('DOMContentLoaded', function() {
+            const params = new URLSearchParams(window.location.search);
+            currentSubject = params.get('subject') || 'Physics';
+            
+            // Load questions for subject
+            if(quizData[currentSubject]){
+                const topicKey = Object.keys(quizData[currentSubject])[0];
+                currentTopic = topicKey;
+                currentQuestions = quizData[currentSubject][topicKey];
+            }
+
+            document.getElementById('quizTitle').textContent = currentSubject + ' Quiz';
+            document.getElementById('quizSubject').textContent = currentTopic;
+
+            loadQuestion();
+            startTimer();
+        });
+
+        function loadQuestion(){
+            if(currentQuestionIndex >= currentQuestions.length){
+                showFinalResults();
+                return;
+            }
+
+            const q = currentQuestions[currentQuestionIndex];
+            document.getElementById('questionProgress').textContent = `Question ${currentQuestionIndex + 1}/${currentQuestions.length}`;
+            document.getElementById('questionText').textContent = q.question;
+
+            const grid = document.getElementById('optionsGrid');
+            grid.innerHTML = '';
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = `${String.fromCharCode(65 + idx)}) ${opt}`;
+                btn.onclick = () => selectOption(idx, btn);
+                grid.appendChild(btn);
+            });
+
+            document.getElementById('questionView').style.display = 'block';
+            document.getElementById('resultView').classList.remove('show');
+            document.getElementById('nextBtn').disabled = true;
+        }
+
+        function selectOption(idx, btn){
+            document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            document.getElementById('nextBtn').disabled = false;
+            selectedAnswers[currentQuestionIndex] = idx;
+        }
+
+        function submitAnswer(){
+            const q = currentQuestions[currentQuestionIndex];
+            const isCorrect = selectedAnswers[currentQuestionIndex] === q.correct;
+            scores[currentQuestionIndex] = isCorrect ? 1 : 0;
+
+            // Show result
+            document.getElementById('questionView').style.display = 'none';
+            document.getElementById('resultView').classList.add('show');
+
+            const score = scores.filter(s => s === 1).length;
+            document.getElementById('resultScore').textContent = `${score}/${currentQuestionIndex + 1}`;
+
+            if(isCorrect){
+                document.getElementById('feedbackText').textContent = '✅ Correct! ' + q.explanation;
+                document.getElementById('feedbackText').style.backgroundColor = '#d4edda';
+            }else{
+                document.getElementById('feedbackText').textContent = '❌ Incorrect. ' + q.explanation;
+                document.getElementById('feedbackText').style.backgroundColor = '#f8d7da';
+            }
+
+            document.getElementById('tipsContent').textContent = q.explanation;
+            document.getElementById('weakTopicContainer').innerHTML = '';
+            if(!isCorrect){
+                document.getElementById('weakTopicContainer').innerHTML = `<div class="weak-topic-tag">⚠️ Weak Area: ${currentTopic}</div>`;
+            }
+        }
+
+        function nextQuestion(){
+            currentQuestionIndex++;
+            if(currentQuestionIndex >= currentQuestions.length){
+                showFinalResults();
+            }else{
+                loadQuestion();
+            }
+        }
+
+        function showFinalResults(){
+            const totalScore = scores.filter(s => s === 1).length;
+            document.getElementById('questionView').style.display = 'none';
+            document.getElementById('resultView').classList.remove('show');
+            document.getElementById('finalResultsView').classList.add('show');
+            document.getElementById('finalScore').textContent = `${totalScore}/${currentQuestions.length}`;
+
+            // Detect weak topics
+            let weakCount = 0;
+            scores.forEach((s, idx) => { if(s === 0) weakCount++; });
+            
+            const weakHTML = weakCount > 0 ? `<span class="weak-topic-tag">⚠️ ${weakCount} weak area(s) detected in ${currentTopic}</span>` : '<span style="color: #28a745; font-weight: 700;">✅ Great job! No major weak areas.</span>';
+            document.getElementById('finalWeakTopics').innerHTML = weakHTML;
+
+            // Store attempt
+            const attempt = {
+                subject: currentSubject,
+                topic: currentTopic,
+                score: totalScore,
+                outOf: currentQuestions.length,
+                date: new Date().toISOString().split('T')[0],
+                accuracy: Math.round((totalScore / currentQuestions.length) * 100)
+            };
+            const attemptsKey = `attempts_${localStorage.getItem('studentID') || 'demo'}`;
+            let attempts = [];
+            try{ attempts = JSON.parse(localStorage.getItem(attemptsKey) || '[]'); }catch(e){}
+            attempts.push(attempt);
+            try{ localStorage.setItem(attemptsKey, JSON.stringify(attempts)); }catch(e){}
+        }
+
+        function generateStudyPlan(){
+            const plan = `
+3-Day Study Plan for ${currentTopic}
+
+Day 1 - Concepts & Theory (45 min)
+• Revisit core concepts in ${currentTopic}
+• Watch explanation videos
+• Take detailed notes
+
+Day 2 - Practice Problems (45 min)
+• Solve 10 practice questions
+• Review mistakes from this quiz
+• Work on weak areas
+
+Day 3 - Mock Test (45 min)
+• Take a full mock quiz
+• Review all mistakes
+• Focus on difficult topics
+            `;
+            alert('📚 Study Plan Generated:\n' + plan);
+            backToDashboard();
+        }
+
+        function goBack(){
+            if(confirm('Are you sure? Your progress will be lost.')){
+                window.location.href = 'prepsense-dashboard.html';
+            }
+        }
+
+        function backToDashboard(){
+            window.location.href = 'prepsense-dashboard.html';
+        }
+
+        function startTimer(){
+            setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const mins = Math.floor(elapsed / 60);
+                const secs = elapsed % 60;
+                document.getElementById('quizTimer').textContent = `⏱ Time: ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
