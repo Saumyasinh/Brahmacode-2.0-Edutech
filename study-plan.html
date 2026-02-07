@@ -15,6 +15,37 @@
             --shadow-sm: 0 2px 8px rgba(18, 44, 79, 0.08);
             --shadow-md: 0 4px 16px rgba(18, 44, 79, 0.12);
             --shadow-lg: 0 8px 24px rgba(18, 44, 79, 0.15);
+            --border-radius: 16px;
+            --transition: all 0.3s ease;
+        }
+
+        /* PAGE TRANSITION ANIMATION */
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .page-transition-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--background-cream);
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .page-transition-overlay.fade-out {
+            animation: fadeOut 0.6s ease-out forwards;
+        }
+
+        .page-transition-overlay.fade-in {
+            animation: fadeIn 0.4s ease-in forwards;
+            pointer-events: auto;
         }
 
         * {
@@ -409,7 +440,7 @@
                 <div class="sidebar-brand-icon">P</div>
                 <span>PrepSense</span>
             </div>
-            <a href="prepsense-dashboard.html" class="nav-link">← Back to Dashboard</a>
+            <a href="#" onclick="handleNavigation('prepsense-dashboard.html')" class="nav-link">← Back to Dashboard</a>
         </aside>
 
         <!-- MAIN CONTENT -->
@@ -921,6 +952,33 @@
             }
         }
     </script>
+
+    <!-- PAGE TRANSITION OVERLAY -->
+    <div class="page-transition-overlay" id="pageTransition"></div>
+
+    <script>
+        // PAGE TRANSITION HANDLER
+        document.addEventListener('DOMContentLoaded', function() {
+            const transitionOverlay = document.getElementById('pageTransition');
+            if (transitionOverlay) {
+                transitionOverlay.classList.add('fade-out');
+            }
+        });
+
+        function handleNavigation(href) {
+            event && event.preventDefault();
+            event && event.stopPropagation();
+            const transitionOverlay = document.getElementById('pageTransition');
+            if (transitionOverlay) {
+                transitionOverlay.classList.remove('fade-out');
+                transitionOverlay.classList.add('fade-in');
+                setTimeout(() => { window.location.href = href; }, 400);
+            } else {
+                window.location.href = href;
+            }
+        }
+    </script>
+
     <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div><div class="loading-text">Preparing your learning space…</div></div>
     <script>
         function showLoader() { const el = document.getElementById('loadingOverlay'); if(el) el.classList.add('active'); }

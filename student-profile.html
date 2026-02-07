@@ -19,6 +19,35 @@
             --transition: all 0.3s ease;
         }
 
+        /* PAGE TRANSITION ANIMATION */
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .page-transition-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--background-cream);
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .page-transition-overlay.fade-out {
+            animation: fadeOut 0.6s ease-out forwards;
+        }
+
+        .page-transition-overlay.fade-in {
+            animation: fadeIn 0.4s ease-in forwards;
+            pointer-events: auto;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -560,25 +589,25 @@
 
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a href="prepsense-dashboard.html" class="nav-link">
+                    <a href="#" onclick="handleNavigation('prepsense-dashboard.html')" class="nav-link">
                         <span>📊</span>
                         <span>Dashboard</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="quiz.html?subject=Physics" class="nav-link">
+                    <a href="#" onclick="handleNavigation('quiz.html?subject=Physics')" class="nav-link">
                         <span>📝</span>
                         <span>Practice Quiz</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="weak-topics.html" class="nav-link">
+                    <a href="#" onclick="handleNavigation('weak-topics.html')" class="nav-link">
                         <span>⚠️</span>
                         <span>Weak Topics</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="study-plan.html" class="nav-link">
+                    <a href="#" onclick="handleNavigation('study-plan.html')" class="nav-link">
                         <span>📚</span>
                         <span>Study Plan & History</span>
                     </a>
@@ -830,6 +859,30 @@
             try { localStorage.removeItem('currentUser'); localStorage.removeItem('role'); localStorage.removeItem('studentID'); localStorage.removeItem('studentName'); } catch(e) {}
             window.location.href = 'index.html';
         }
+
+        // PAGE TRANSITION HANDLER
+        document.addEventListener('DOMContentLoaded', function() {
+            const transitionOverlay = document.getElementById('pageTransition');
+            if (transitionOverlay) {
+                transitionOverlay.classList.add('fade-out');
+            }
+        });
+
+        function handleNavigation(href) {
+            event && event.preventDefault();
+            event && event.stopPropagation();
+            const transitionOverlay = document.getElementById('pageTransition');
+            if (transitionOverlay) {
+                transitionOverlay.classList.remove('fade-out');
+                transitionOverlay.classList.add('fade-in');
+                setTimeout(() => { window.location.href = href; }, 400);
+            } else {
+                window.location.href = href;
+            }
+        }
     </script>
+
+    <!-- PAGE TRANSITION OVERLAY -->
+    <div class="page-transition-overlay" id="pageTransition"></div>
 </body>
 </html>
