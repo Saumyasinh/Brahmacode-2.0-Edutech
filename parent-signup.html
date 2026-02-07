@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parent Sign Up - PrepSense AI</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="login-card">
+            <!-- Back Button and Title -->
+            <div class="login-header">
+                <a href="parent.html" class="back-button" title="Go back">←</a>
+                <h1 class="login-title">PARENT SIGN UP</h1>
+            </div>
+
+            <!-- Success/Error Messages -->
+            <div id="successMessage" class="success-message" style="display: none;"></div>
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+            <!-- Sign Up Form -->
+            <form class="login-form" id="signupForm" onsubmit="handleSignup(event)">
+                <div class="form-group">
+                    <label for="fullName" class="form-label">Full Name:</label>
+                    <input 
+                        type="text" 
+                        id="fullName" 
+                        name="fullName" 
+                        class="form-input" 
+                        placeholder="Enter your full name"
+                        required
+                    >
+                    <span class="error-text" id="fullNameError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="studentId" class="form-label">Student ID:</label>
+                    <input 
+                        type="text" 
+                        id="studentId" 
+                        name="studentId" 
+                        class="form-input" 
+                        placeholder="Enter your child's Student ID"
+                        required
+                    >
+                    <span class="error-text" id="studentIdError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="email" class="form-label">Email (Optional):</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        class="form-input" 
+                        placeholder="Enter your email"
+                    >
+                    <span class="error-text" id="emailError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">Password:</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        class="form-input" 
+                        placeholder="Minimum 6 characters"
+                        required
+                    >
+                    <span class="error-text" id="passwordError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword" class="form-label">Confirm Password:</label>
+                    <input 
+                        type="password" 
+                        id="confirmPassword" 
+                        name="confirmPassword" 
+                        class="form-input" 
+                        placeholder="Re-enter your password"
+                        required
+                    >
+                    <span class="error-text" id="confirmPasswordError"></span>
+                </div>
+
+                <button type="submit" class="login-button" id="submitBtn">
+                    Create Account
+                </button>
+            </form>
+
+            <!-- Login Link -->
+            <p class="signup-prompt">
+                Already have an account? <a href="parent.html" class="signup-link">Go to Login</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function validateForm() {
+            const errors = {};
+            const fullName = document.getElementById('fullName').value.trim();
+            const studentId = document.getElementById('studentId').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Clear all error messages
+            document.querySelectorAll('.error-text').forEach(el => el.textContent = '');
+            document.getElementById('errorMessage').style.display = 'none';
+
+            // Validate Full Name
+            if (!fullName) {
+                errors.fullName = 'Full Name is required';
+            }
+
+            // Validate Student ID
+            if (!studentId) {
+                errors.studentId = 'Student ID is required';
+            } else {
+                // Check for duplicate Student ID
+                const parentAccounts = JSON.parse(localStorage.getItem('parentAccounts') || '[]');
+                const duplicate = parentAccounts.find(acc => acc.studentId === studentId);
+                if (duplicate) {
+                    errors.studentId = 'This Student ID is already registered';
+                }
+            }
+
+            // Validate Email (if provided)
+            if (email && !isValidEmail(email)) {
+                errors.email = 'Please enter a valid email';
+            }
+
+            // Validate Password
+            if (!password) {
+                errors.password = 'Password is required';
+            } else if (password.length < 6) {
+                errors.password = 'Password must be at least 6 characters';
+            }
+
+            // Validate Confirm Password
+            if (!confirmPassword) {
+                errors.confirmPassword = 'Please confirm your password';
+            } else if (password !== confirmPassword) {
+                errors.confirmPassword = 'Passwords do not match';
+            }
+
+            return errors;
+        }
+
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        function displayErrors(errors) {
+            if (Object.keys(errors).length === 0) {
+                return;
+            }
+
+            // Display inline errors for each field
+            for (const [field, message] of Object.entries(errors)) {
+                const errorElement = document.getElementById(`${field}Error`);
+                const inputElement = document.getElementById(field);
+                if (errorElement) {
+                    errorElement.textContent = message;
+                    if (inputElement) {
+                        inputElement.classList.add('input-error');
+                    }
+                }
+            }
+
+            // Display general error message
+            const errorMsg = Object.values(errors).join('\n');
+            const errorMessageDiv = document.getElementById('errorMessage');
+            errorMessageDiv.textContent = 'Please fix the errors above';
+            errorMessageDiv.style.display = 'block';
+        }
+
+        function handleSignup(event) {
+            event.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            
+            // Prevent double submission
+            if (submitBtn.disabled) {
+                return;
+            }
+
+            // Clear previous messages
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+            document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
+
+            // Validate form
+            const errors = validateForm();
+            if (Object.keys(errors).length > 0) {
+                displayErrors(errors);
+                return;
+            }
+
+            // Get form data
+            const fullName = document.getElementById('fullName').value.trim();
+            const studentId = document.getElementById('studentId').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            try {
+                // Save to localStorage
+                const parentAccounts = JSON.parse(localStorage.getItem('parentAccounts') || '[]');
+                const newAccount = {
+                    fullName: fullName,
+                    studentId: studentId,
+                    email: email,
+                    password: password
+                };
+                parentAccounts.push(newAccount);
+                localStorage.setItem('parentAccounts', JSON.stringify(parentAccounts));
+
+                // Disable button and show success message
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Account Created!';
+                
+                const successDiv = document.getElementById('successMessage');
+                successDiv.textContent = 'Account created successfully! Redirecting to login...';
+                successDiv.style.display = 'block';
+
+                // Reset form
+                document.getElementById('signupForm').reset();
+
+                // Redirect after delay
+                setTimeout(() => {
+                    window.location.href = 'parent.html';
+                }, 1500);
+
+            } catch (error) {
+                console.error('Error saving account:', error);
+                const errorDiv = document.getElementById('errorMessage');
+                errorDiv.textContent = 'An error occurred. Please try again.';
+                errorDiv.style.display = 'block';
+                submitBtn.disabled = false;
+            }
+        }
+
+        // Remove input-error class on input change
+        document.querySelectorAll('.form-input').forEach(input => {
+            input.addEventListener('input', function() {
+                this.classList.remove('input-error');
+                const errorElement = document.getElementById(`${this.id}Error`);
+                if (errorElement) {
+                    errorElement.textContent = '';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
