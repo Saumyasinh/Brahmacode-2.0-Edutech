@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weak Topics - PrepSense AI</title>
+    <style>
+        :root {
+            --primary-dark: #122C4F;
+            --background-cream: #FBF9E3;
+            --accent-yellow: #F0D637;
+            --accent-blue: #5B88B2;
+            --white: #FFFFFF;
+            --light-gray: #F5F3ED;
+            --shadow-sm: 0 2px 8px rgba(18, 44, 79, 0.08);
+            --shadow-md: 0 4px 16px rgba(18, 44, 79, 0.12);
+            --shadow-lg: 0 8px 24px rgba(18, 44, 79, 0.15);
+            --border-radius: 16px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-cream);
+            color: var(--primary-dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(180deg, var(--primary-dark) 0%, #0f1f37 100%);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-lg);
+            overflow-y: auto;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
+            color: var(--accent-yellow);
+            font-weight: 700;
+            font-size: 16px;
+            padding: 12px 0;
+        }
+
+        .sidebar-brand-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--accent-yellow);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-dark);
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            flex: 1;
+        }
+
+        .nav-item {
+            margin-bottom: 15px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 13px 16px;
+            color: #a8b8cc;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: var(--transition);
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(240, 214, 55, 0.1);
+            color: var(--accent-yellow);
+        }
+
+        .nav-link.active {
+            background-color: var(--accent-yellow);
+            color: var(--primary-dark);
+            font-weight: 700;
+        }
+
+        .logout-btn {
+            padding: 12px 16px;
+            background-color: rgba(255, 107, 107, 0.1);
+            color: #ff6b6b;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+        }
+
+        .logout-btn:hover {
+            background-color: rgba(255, 107, 107, 0.2);
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            background-color: var(--background-cream);
+        }
+
+        .header {
+            background-color: var(--white);
+            padding: 30px;
+            box-shadow: var(--shadow-sm);
+            border-bottom: 1px solid rgba(18, 44, 79, 0.05);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: var(--primary-dark);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            color: #7a8290;
+        }
+
+        .content {
+            padding: 30px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .weak-topics-grid {
+            display: grid;
+            gap: 24px;
+        }
+
+        .topic-card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 28px;
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+            border-left: 5px solid var(--accent-yellow);
+        }
+
+        .topic-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-4px);
+        }
+
+        .topic-card.rank-1 {
+            border-left-color: #ff6b6b;
+        }
+
+        .topic-card.rank-2 {
+            border-left-color: #ff9800;
+        }
+
+        .topic-card.rank-3 {
+            border-left-color: #f0d637;
+        }
+
+        .topic-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .topic-rank {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .rank-badge {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-yellow) 0%, #f5c61a 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: var(--primary-dark);
+            font-size: 18px;
+        }
+
+        .rank-badge.rank-1 {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
+            color: white;
+        }
+
+        .rank-badge.rank-2 {
+            background: linear-gradient(135deg, #ff9800 0%, #fb8c00 100%);
+            color: white;
+        }
+
+        .rank-badge.rank-3 {
+            background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
+        }
+
+        .rank-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topic-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .topic-subtitle {
+            font-size: 12px;
+            color: #7a8290;
+            margin-top: 4px;
+        }
+
+        .priority-label {
+            display: inline-block;
+            padding: 6px 14px;
+            background-color: rgba(255, 107, 107, 0.15);
+            color: #ff6b6b;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .priority-label.medium {
+            background-color: rgba(255, 152, 0, 0.15);
+            color: #ff9800;
+        }
+
+        .priority-label.low {
+            background-color: rgba(240, 214, 55, 0.15);
+            color: var(--accent-yellow);
+        }
+
+        .topic-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 16px;
+            margin: 16px 0;
+        }
+
+        .stat-item {
+            background: var(--light-gray);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary-dark);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #7a8290;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        .recommendation {
+            background: linear-gradient(135deg, rgba(91, 136, 178, 0.1) 0%, rgba(240, 214, 55, 0.1) 100%);
+            border-left: 4px solid var(--accent-blue);
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+            font-size: 13px;
+            color: var(--primary-dark);
+            line-height: 1.6;
+        }
+
+        .recommendation strong {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--accent-blue);
+            font-weight: 700;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-dark);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0a1630;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--primary-dark);
+            border: 2px solid rgba(18, 44, 79, 0.1);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-yellow);
+            background-color: rgba(240, 214, 55, 0.05);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 30px;
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+        }
+
+        .empty-state-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 12px;
+        }
+
+        .empty-state-text {
+            color: #7a8290;
+            font-size: 14px;
+            margin-bottom: 28px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .topic-header {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .priority-label {
+                align-self: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="sidebar-brand-icon">P</div>
+                <span>PrepSense</span>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="prepsense-dashboard.html" class="nav-link">📊 Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a href="quiz.html?subject=Physics" class="nav-link">📝 Practice Quiz</a>
+                </li>
+                <li class="nav-item">
+                    <a href="weak-topics.html" class="nav-link active">⚠️ Weak Topics</a>
+                </li>
+                <li class="nav-item">
+                    <a href="study-plan.html" class="nav-link">📚 Study Plan & History</a>
+                </li>
+            </ul>
+
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- HEADER -->
+            <div class="header">
+                <h1>⚠️ Weak Topics Analysis</h1>
+                <p class="header-subtitle">Subjects ranked by difficulty. Focus on priority areas to improve your readiness</p>
+            </div>
+
+            <!-- CONTENT -->
+            <div class="content">
+                <div class="weak-topics-grid" id="weakTopicsContainer">
+                    <!-- Topics will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Access control
+        document.addEventListener('DOMContentLoaded', function() {
+            const storedRole = (localStorage.getItem('role') || '').toLowerCase();
+            let currentUser = null;
+            try { currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null'); } catch(e) { currentUser = null; }
+            const role = storedRole || (currentUser && currentUser.role) || '';
+            if (role !== 'student') {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            loadWeakTopicsAnalysis();
+        });
+
+        function loadWeakTopicsAnalysis() {
+            const studentID = localStorage.getItem('studentID') || 'demo-student';
+            const progressKey = `progress_${studentID}`;
+            const attemptsKey = `attempts_${studentID}`;
+
+            try {
+                const progress = JSON.parse(localStorage.getItem(progressKey) || '{}');
+                const attempts = JSON.parse(localStorage.getItem(attemptsKey) || '[]');
+
+                if (!progress.subjectStats || Object.keys(progress.subjectStats).length === 0) {
+                    document.getElementById('weakTopicsContainer').innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📚</div>
+                            <div class="empty-state-title">No Data Yet</div>
+                            <p class="empty-state-text">Complete some quizzes to see your weak topics analysis</p>
+                            <button class="btn btn-primary" onclick="window.location.href='quiz.html?subject=Physics'">Start Practice Quiz</button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Calculate subject rankings by weakness
+                const subjectRankings = [];
+                Object.keys(progress.subjectStats).forEach(subject => {
+                    const stats = progress.subjectStats[subject];
+                    if (stats.attempts > 0) {
+                        const accuracy = (stats.correct / stats.attempts) * 100;
+                        subjectRankings.push({
+                            subject: subject,
+                            accuracy: accuracy,
+                            attempts: stats.attempts,
+                            correct: stats.correct,
+                            incorrect: stats.attempts - stats.correct
+                        });
+                    }
+                });
+
+                // Sort by accuracy ascending (weakest first)
+                subjectRankings.sort((a, b) => a.accuracy - b.accuracy);
+
+                if (subjectRankings.length === 0) {
+                    document.getElementById('weakTopicsContainer').innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🎯</div>
+                            <div class="empty-state-title">Ready to Learn</div>
+                            <p class="empty-state-text">Complete quizzes on different subjects to build your learning profile</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Generate HTML for each subject
+                let html = '';
+                subjectRankings.forEach((subject, index) => {
+                    const rank = index + 1;
+                    let priorityLabel = '';
+                    let priorityClass = '';
+                    
+                    if (rank === 1) {
+                        priorityLabel = '🔴 CRITICAL - Practice First';
+                        priorityClass = 'high';
+                    } else if (rank === 2) {
+                        priorityLabel = '🟠 HIGH - Practice Soon';
+                        priorityClass = 'medium';
+                    } else {
+                        priorityLabel = '🟡 MEDIUM - Review Later';
+                        priorityClass = 'low';
+                    }
+
+                    let recommendation = '';
+                    if (subject.accuracy < 50) {
+                        recommendation = `Focus on understanding basic concepts of ${subject.subject}. Try to reach 60% accuracy first.`;
+                    } else if (subject.accuracy < 70) {
+                        recommendation = `You're making progress in ${subject.subject}. More practice will help you solidify the concepts.`;
+                    } else {
+                        recommendation = `Good job on ${subject.subject}! Minor tweaks will help you reach mastery.`;
+                    }
+
+                    html += `
+                        <div class="topic-card rank-${rank}">
+                            <div class="topic-header">
+                                <div class="topic-rank">
+                                    <div class="rank-badge rank-${rank}">#${rank}</div>
+                                    <div class="rank-info">
+                                        <div class="topic-name">${subject.subject}</div>
+                                        <div class="topic-subtitle">Accuracy: ${subject.accuracy.toFixed(0)}%</div>
+                                    </div>
+                                </div>
+                                <span class="priority-label ${priorityClass}">${priorityLabel}</span>
+                            </div>
+
+                            <div class="topic-stats">
+                                <div class="stat-item">
+                                    <div class="stat-value">${subject.correct}</div>
+                                    <div class="stat-label">Correct</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">${subject.incorrect}</div>
+                                    <div class="stat-label">Incorrect</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">${subject.attempts}</div>
+                                    <div class="stat-label">Attempts</div>
+                                </div>
+                            </div>
+
+                            <div class="recommendation">
+                                <strong>💡 Recommendation:</strong>
+                                ${recommendation}
+                            </div>
+
+                            <div class="action-buttons">
+                                <button class="btn btn-primary" onclick="practiceTopic('${subject.subject}')">Practice ${subject.subject}</button>
+                                <button class="btn btn-secondary" onclick="createStudyPlan('${subject.subject}')">📚 Study Plan</button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                document.getElementById('weakTopicsContainer').innerHTML = html;
+            } catch (e) {
+                console.error('Error loading weak topics:', e);
+            }
+        }
+
+        function practiceTopic(subject) {
+            window.location.href = `quiz.html?subject=${encodeURIComponent(subject)}`;
+        }
+
+        function createStudyPlan(subject) {
+            // Generate a quick study plan for this subject
+            const studentID = localStorage.getItem('studentID') || 'demo-student';
+            const key = `studyPlans_${studentID}`;
+            const now = new Date().toISOString();
+            const plan = {
+                id: 'plan_' + Date.now(),
+                date: now,
+                subject: subject,
+                weakTopics: [subject],
+                days: [
+                    { day: 1, title: 'Concepts & Theory', topic: subject, duration: 45 },
+                    { day: 2, title: 'Practice Problems', topic: subject, duration: 45 },
+                    { day: 3, title: 'Mock Test & Review', topic: subject, duration: 45 }
+                ]
+            };
+            let plans = [];
+            try { plans = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { plans = []; }
+            plans.push(plan);
+            try { localStorage.setItem(key, JSON.stringify(plans)); } catch(e) {}
+            
+            window.location.href = `study-plan.html?subject=${subject}`;
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('role');
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+</html>
