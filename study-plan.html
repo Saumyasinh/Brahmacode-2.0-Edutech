@@ -924,7 +924,7 @@
             let html = '<h3 style="margin-bottom: 15px;">Recent Quiz Attempts</h3>';
             attempts.reverse().forEach(attempt => {
                 const acc = attempt.accuracy || ((attempt.score / attempt.outOf) * 100);
-                const color = acc >= 80 ? '#28a745' : acc >= 60 ? var('--accent-yellow') : '#dc3545';
+                const color = acc >= 80 ? '#28a745' : acc >= 60 ? '#F0D637' : '#dc3545';
                 html += `
                 <div class="attempt-card">
                     <div class="attempt-info">

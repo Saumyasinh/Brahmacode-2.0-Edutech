@@ -288,9 +288,6 @@
         .modal-btn-cancel:hover {
             background: rgba(18, 44, 79, 0.15);
         }
-            font-weight: 600;
-            color: var(--primary-dark);
-        }
 
         /* QUIZ CONTENT */
         .quiz-content {
@@ -1289,7 +1286,14 @@
             
             // Generate AI advice
             let advice = '';
-            if(accuracy >= 80) {\n                advice = `🎉 Excellent work! You've demonstrated strong understanding of ${currentTopic}. Keep practicing to maintain your performance!`;\n            } else if(accuracy >= 60) {\n                advice = `👍 Good effort! You're on the right track. Focus on the weak areas and try to reach 80% accuracy.`;\n            } else {\n                advice = `📚 Keep practicing! This topic needs more review. Consider going through the study materials again and attempting practice problems.`;\n            }\n            document.getElementById('aiAdvice').textContent = advice;
+            if(accuracy >= 80) {
+                advice = `🎉 Excellent work! You've demonstrated strong understanding of ${currentTopic}. Keep practicing to maintain your performance!`;
+            } else if(accuracy >= 60) {
+                advice = `👍 Good effort! You're on the right track. Focus on the weak areas and try to reach 80% accuracy.`;
+            } else {
+                advice = `📚 Keep practicing! This topic needs more review. Consider going through the study materials again and attempting practice problems.`;
+            }
+            document.getElementById('aiAdvice').textContent = advice;
 
             // Update progress tracking
             updateProgressQuiz(currentSubject, totalScore, currentQuestions.length);
