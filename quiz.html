@@ -557,20 +557,85 @@
         let scores = [];
         let startTime = Date.now();
 
+        // UTILITY FUNCTIONS
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function getWeakTopics() {
+            const studentID = localStorage.getItem('studentID') || 'demo-student';
+            const attemptsKey = `attempts_${studentID}`;
+            let attempts = [];
+            try { attempts = JSON.parse(localStorage.getItem(attemptsKey) || '[]'); } catch(e) {}
+            
+            const weakTopics = [];
+            attempts.forEach(attempt => {
+                const accuracy = attempt.accuracy || ((attempt.score / attempt.outOf) * 100);
+                if (accuracy < 75) {
+                    weakTopics.push({ subject: attempt.subject, topic: attempt.topic, accuracy: accuracy });
+                }
+            });
+            return weakTopics;
+        }
+
+        function selectQuizQuestions() {
+            const weakTopics = getWeakTopics();
+            let topicsToUse = [];
+
+            // Check if there are weak topics in current subject
+            const weakInSubject = weakTopics.filter(w => w.subject === currentSubject);
+            
+            if (weakInSubject.length > 0) {
+                // 70% from weak topic, 30% random
+                topicsToUse = weakInSubject.slice(0, 2);
+            }
+
+            // Get available topics
+            const allTopics = Object.keys(quizData[currentSubject] || {});
+            if (topicsToUse.length === 0) {
+                topicsToUse = allTopics;
+            }
+
+            // Collect and shuffle questions
+            let questionsPool = [];
+            topicsToUse.forEach(topicObj => {
+                const topicName = typeof topicObj === 'string' ? topicObj : topicObj.topic;
+                if (quizData[currentSubject] && quizData[currentSubject][topicName]) {
+                    questionsPool = questionsPool.concat(quizData[currentSubject][topicName]);
+                }
+            });
+
+            // If no weak topics, get questions from first topic
+            if (questionsPool.length === 0 && allTopics.length > 0) {
+                currentTopic = allTopics[0];
+                questionsPool = quizData[currentSubject][currentTopic] || [];
+            }
+
+            // Shuffle and return first 5
+            return shuffleArray(questionsPool).slice(0, 5);
+        }
+
         // INIT
         document.addEventListener('DOMContentLoaded', function() {
             const params = new URLSearchParams(window.location.search);
             currentSubject = params.get('subject') || 'Physics';
             
-            // Load questions for subject
+            // Load and prepare questions
             if(quizData[currentSubject]){
                 const topicKey = Object.keys(quizData[currentSubject])[0];
                 currentTopic = topicKey;
-                currentQuestions = quizData[currentSubject][topicKey];
+                
+                // Get questions with weak topic focus and shuffle
+                currentQuestions = selectQuizQuestions();
             }
 
             document.getElementById('quizTitle').textContent = currentSubject + ' Quiz';
-            document.getElementById('quizSubject').textContent = currentTopic;
+            document.getElementById('quizSubject').textContent = 'Adaptive Quiz (Random Order)';
 
             loadQuestion();
             startTimer();
@@ -675,26 +740,12 @@
         }
 
         function generateStudyPlan(){
-            const plan = `
-3-Day Study Plan for ${currentTopic}
-
-Day 1 - Concepts & Theory (45 min)
-• Revisit core concepts in ${currentTopic}
-• Watch explanation videos
-• Take detailed notes
-
-Day 2 - Practice Problems (45 min)
-• Solve 10 practice questions
-• Review mistakes from this quiz
-• Work on weak areas
-
-Day 3 - Mock Test (45 min)
-• Take a full mock quiz
-• Review all mistakes
-• Focus on difficult topics
-            `;
-            alert('📚 Study Plan Generated:\n' + plan);
-            backToDashboard();
+            // Pass weak topics and subject to study plan page
+            const weakTopics = getWeakTopics();
+            const weakInSubject = weakTopics.filter(w => w.subject === currentSubject);
+            const weakTopicsList = weakInSubject.map(w => w.topic).join(',');
+            
+            window.location.href = `study-plan.html?subject=${currentSubject}&weakTopics=${encodeURIComponent(weakTopicsList)}`;
         }
 
         function goBack(){

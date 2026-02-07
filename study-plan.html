@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Plan & History - PrepSense AI</title>
+    <style>
+        :root {
+            --primary-dark: #122C4F;
+            --background-cream: #FBF9E3;
+            --accent-yellow: #F0D637;
+            --accent-blue: #5B88B2;
+            --white: #FFFFFF;
+            --light-gray: #F5F3ED;
+            --shadow-sm: 0 2px 8px rgba(18, 44, 79, 0.08);
+            --shadow-md: 0 4px 16px rgba(18, 44, 79, 0.12);
+            --shadow-lg: 0 8px 24px rgba(18, 44, 79, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-cream);
+            color: var(--primary-dark);
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(180deg, var(--primary-dark) 0%, #0f1f37 100%);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-lg);
+            overflow-y: auto;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 30px;
+            color: var(--accent-yellow);
+            font-weight: 700;
+        }
+
+        .sidebar-brand-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--accent-yellow);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-dark);
+            font-weight: bold;
+        }
+
+        .nav-link {
+            padding: 12px 16px;
+            color: #a8b8cc;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(240, 214, 55, 0.1);
+            color: var(--accent-yellow);
+        }
+
+        .nav-link.active {
+            background-color: var(--accent-yellow);
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .header {
+            background-color: var(--white);
+            padding: 20px 30px;
+            border-bottom: 1px solid rgba(18, 44, 79, 0.05);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: #7a8290;
+            font-size: 14px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 30px;
+            padding: 0 30px;
+            margin-top: 20px;
+            border-bottom: 1px solid rgba(18, 44, 79, 0.1);
+        }
+
+        .tab {
+            padding: 12px 0;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-weight: 600;
+            color: #7a8290;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            border-bottom-color: var(--accent-yellow);
+            color: var(--primary-dark);
+        }
+
+        .content {
+            padding: 30px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* STUDY PLAN STYLES */
+        .study-plan-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .day-plan {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-md);
+            border-left: 5px solid var(--accent-yellow);
+        }
+
+        .day-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .day-badge {
+            background: linear-gradient(135deg, var(--accent-yellow) 0%, #f5c61a 100%);
+            color: var(--primary-dark);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 20px;
+        }
+
+        .day-info h3 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .day-info p {
+            color: #7a8290;
+            font-size: 14px;
+        }
+
+        .topics-list {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: rgba(91, 136, 178, 0.05);
+            border-radius: 10px;
+        }
+
+        .topic-item {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(18, 44, 79, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .topic-item:last-child {
+            border-bottom: none;
+        }
+
+        .topic-name {
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .duration {
+            color: #7a8290;
+            font-size: 12px;
+        }
+
+        .resources {
+            margin-top: 15px;
+        }
+
+        .resource-btn {
+            display: inline-block;
+            background: var(--accent-blue);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 12px;
+            margin-right: 10px;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+            font-weight: 600;
+        }
+
+        .resource-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        /* HISTORY STYLES */
+        .history-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .attempt-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .attempt-info {
+            flex: 1;
+        }
+
+        .attempt-subject {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .attempt-topic {
+            color: var(--accent-blue);
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .attempt-date {
+            color: #7a8290;
+            font-size: 12px;
+        }
+
+        .attempt-score {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .score-big {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--accent-yellow);
+        }
+
+        .score-label {
+            font-size: 12px;
+            color: #7a8290;
+            font-weight: 600;
+        }
+
+        .weak-topics-summary {
+            background: linear-gradient(135deg, rgba(255, 154, 86, 0.1), rgba(220, 53, 69, 0.1));
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ff9a56;
+        }
+
+        .weak-topics-summary h3 {
+            margin-bottom: 15px;
+            color: var(--primary-dark);
+        }
+
+        .weak-topic-tag {
+            display: inline-block;
+            background: #ff9a56;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 8px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #7a8290;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .back-btn {
+            display: inline-block;
+            background: var(--primary-dark);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+        }
+
+        .back-btn:hover {
+            background: var(--accent-yellow);
+            color: var(--primary-dark);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                padding: 15px;
+                flex-direction: row;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .attempt-card {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .attempt-score {
+                margin-top: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="sidebar-brand-icon">P</div>
+                <span>PrepSense</span>
+            </div>
+            <a href="prepsense-dashboard.html" class="nav-link">← Back to Dashboard</a>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <div class="header">
+                <h1>📚 Study Plan & History</h1>
+                <p>Track your progress and plan your revision strategy</p>
+                <div class="tabs">
+                    <div class="tab active" onclick="switchTab('plan')">📅 Study Plan</div>
+                    <div class="tab" onclick="switchTab('history')">📊 Quiz History</div>
+                </div>
+            </div>
+
+            <div class="content">
+                <!-- STUDY PLAN TAB -->
+                <div id="plan" class="tab-content active">
+                    <div class="study-plan-container">
+                        <button class="back-btn" onclick="generateNewPlan()">🔄 Generate New Plan</button>
+
+                        <div id="weakTopicsSummary"></div>
+
+                        <!-- DAY BY DAY PLAN -->
+                        <div id="studyPlanDays"></div>
+                    </div>
+                </div>
+
+                <!-- HISTORY TAB -->
+                <div id="history" class="tab-content">
+                    <div class="history-container">
+                        <div id="weakTopicsHistory"></div>
+                        <div id="attemptsHistory"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // RESOURCES DATABASE
+        const resources = {
+            'Physics': {
+                'Motion': {
+                    youtube: 'https://www.youtube.com/results?search_query=physics+motion+class+10',
+                    notes: 'Motion is change in position. Key concepts: velocity, acceleration, formulas.',
+                    practice: 'Solve 10+ numericals on each subtopic'
+                },
+                'Force': {
+                    youtube: 'https://www.youtube.com/results?search_query=newtons+laws+of+motion',
+                    notes: 'Newton\'s three laws explain force and motion relationships.',
+                    practice: 'Practice free body diagrams and force problems'
+                }
+            },
+            'Maths': {
+                'Trigonometry': {
+                    youtube: 'https://www.youtube.com/results?search_query=trigonometry+class+10+basics',
+                    notes: 'Master sin, cos, tan functions and identities.',
+                    practice: '15+ identity problems and angle calculations'
+                }
+            },
+            'Chemistry': {
+                'Acids & Bases': {
+                    youtube: 'https://www.youtube.com/results?search_query=acids+bases+chemistry+class+10',
+                    notes: 'Understand pH scale, acid-base reactions, neutralization.',
+                    practice: '8+ balance equations and pH calculations'
+                }
+            },
+            'Biology': {
+                'Photosynthesis': {
+                    youtube: 'https://www.youtube.com/results?search_query=photosynthesis+biology+class+10',
+                    notes: 'Light reactions and Calvin cycle explained.',
+                    practice: 'Label diagrams and answer short questions'
+                }
+            }
+        };
+
+        // INIT
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStudyPlan();
+            loadAttemptHistory();
+        });
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            if(tabName === 'history') {
+                loadAttemptHistory();
+            }
+        }
+
+        function loadStudyPlan() {
+            // Get URL parameters
+            const params = new URLSearchParams(window.location.search);
+            const urlWeakTopics = params.get('weakTopics');
+            const urlSubject = params.get('subject');
+            
+            const studentID = localStorage.getItem('studentID') || 'demo-student';
+            const attemptsKey = `attempts_${studentID}`;
+            let attempts = [];
+            try { attempts = JSON.parse(localStorage.getItem(attemptsKey) || '[]'); } catch(e) {}
+
+            // Find weak topics from localStorage
+            const weakTopics = {};
+            attempts.forEach(a => {
+                const accuracy = a.accuracy || ((a.score / a.outOf) * 100);
+                if (accuracy < 75) {
+                    if (!weakTopics[a.topic]) {
+                        weakTopics[a.topic] = { subject: a.subject, accuracy: accuracy, attempts: 0 };
+                    }
+                    weakTopics[a.topic].attempts++;
+                }
+            });
+
+            // Display weak topics summary
+            const weakArray = Object.entries(weakTopics);
+            if (weakArray.length > 0) {
+                let html = `<div class="weak-topics-summary">
+                    <h3>⚠️ Focus Areas (Low Accuracy)</h3>
+                    ${weakArray.map(([topic, data]) => 
+                        `<span class="weak-topic-tag">${data.subject} - ${topic} (${Math.round(data.accuracy)}%)</span>`
+                    ).join('')}
+                </div>`;
+                document.getElementById('weakTopicsSummary').innerHTML = html;
+            }
+
+            // Generate 3-day plan focused on weak topics
+            // If URL has weak topics from quiz, prioritize those
+            let focusTopics = [];
+            if (urlWeakTopics && urlWeakTopics.length > 0) {
+                const topicList = urlWeakTopics.split(',').filter(t => t.length > 0);
+                topicList.forEach(topic => {
+                    focusTopics.push({ 
+                        subject: urlSubject || 'Physics', 
+                        topic: topic.trim() 
+                    });
+                });
+            }
+            
+            if (focusTopics.length === 0) {
+                focusTopics = weakArray.length > 0 
+                    ? weakArray.slice(0, 3).map(([topic, data]) => ({ topic, subject: data.subject }))
+                    : [
+                        { subject: 'Physics', topic: 'Motion' },
+                        { subject: 'Maths', topic: 'Trigonometry' },
+                        { subject: 'Chemistry', topic: 'Acids & Bases' }
+                    ];
+            }
+
+            let planHTML = '';
+
+            // Day 1 - Concepts
+            planHTML += generateDayPlan(1, 'Concepts & Theory', focusTopics[0] || {}, 45);
+
+            // Day 2 - Practice
+            planHTML += generateDayPlan(2, 'Practice Problems', focusTopics[1] || {}, 45);
+
+            // Day 3 - Mock Test
+            planHTML += generateDayPlan(3, 'Mock Test & Review', focusTopics[2] || {}, 45);
+
+            document.getElementById('studyPlanDays').innerHTML = planHTML;
+        }
+
+        function generateDayPlan(day, title, topicData, duration) {
+            const { subject = 'Physics', topic = 'Practice' } = topicData;
+            const res = (resources[subject] && resources[subject][topic]) || {
+                youtube: '#',
+                notes: 'Check your study materials',
+                practice: 'Work on practice problems'
+            };
+
+            return `
+            <div class="day-plan">
+                <div class="day-header">
+                    <div class="day-badge">Day ${day}</div>
+                    <div class="day-info">
+                        <h3>${title}</h3>
+                        <p>${subject} - ${topic} | ⏱ ${duration} minutes</p>
+                    </div>
+                </div>
+
+                <div class="topics-list">
+                    <div class="topic-item">
+                        <span class="topic-name">✓ Review core concepts from notes</span>
+                        <span class="duration">15 min</span>
+                    </div>
+                    <div class="topic-item">
+                        <span class="topic-name">✓ Watch explanation videos</span>
+                        <span class="duration">20 min</span>
+                    </div>
+                    <div class="topic-item">
+                        <span class="topic-name">✓ ${res.practice}</span>
+                        <span class="duration">10 min</span>
+                    </div>
+                </div>
+
+                <div class="resources">
+                    <strong>📚 Resources:</strong>
+                    <div style="margin-top: 10px;">
+                        <a href="${res.youtube}" target="_blank" class="resource-btn">🎥 YouTube Videos</a>
+                        <button class="resource-btn" onclick="alert('📖\n\n${res.notes}')">📖 Notes Summary</button>
+                    </div>
+                </div>
+            </div>
+            `;
+        }
+
+        function generateNewPlan() {
+            alert('✨ New study plan generated based on your weak areas! Focus on these 3 days to improve your exam readiness.');
+            loadStudyPlan();
+        }
+
+        function loadAttemptHistory() {
+            const studentID = localStorage.getItem('studentID') || 'demo-student';
+            const attemptsKey = `attempts_${studentID}`;
+            let attempts = [];
+            try { attempts = JSON.parse(localStorage.getItem(attemptsKey) || '[]'); } catch(e) {}
+
+            if (attempts.length === 0) {
+                document.getElementById('attemptsHistory').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <p>No quiz attempts yet. Start practicing to see your history!</p>
+                    </div>
+                `;
+                document.getElementById('weakTopicsHistory').innerHTML = '';
+                return;
+            }
+
+            // Weak topics analysis
+            const weakTopics = {};
+            attempts.forEach(a => {
+                const acc = a.accuracy || ((a.score / a.outOf) * 100);
+                if (acc < 75) {
+                    const key = `${a.subject} - ${a.topic}`;
+                    if (!weakTopics[key]) weakTopics[key] = [];
+                    weakTopics[key].push(acc);
+                }
+            });
+
+            if (Object.keys(weakTopics).length > 0) {
+                let html = `<div class="weak-topics-summary">
+                    <h3>⚠️ Areas Needing Improvement</h3>
+                `;
+                Object.entries(weakTopics).forEach(([key, scores]) => {
+                    const avg = (scores.reduce((a, b) => a + b) / scores.length).toFixed(0);
+                    html += `<span class="weak-topic-tag">${key} (${avg}% avg)</span>`;
+                });
+                html += `</div>`;
+                document.getElementById('weakTopicsHistory').innerHTML = html;
+            }
+
+            // Attempts list (sorted newest first)
+            let html = '<h3 style="margin-bottom: 15px;">Recent Quiz Attempts</h3>';
+            attempts.reverse().forEach(attempt => {
+                const acc = attempt.accuracy || ((attempt.score / attempt.outOf) * 100);
+                const color = acc >= 80 ? '#28a745' : acc >= 60 ? var('--accent-yellow') : '#dc3545';
+                html += `
+                <div class="attempt-card">
+                    <div class="attempt-info">
+                        <div class="attempt-subject">${attempt.subject}</div>
+                        <div class="attempt-topic">${attempt.topic}</div>
+                        <div class="attempt-date">📅 ${attempt.date}</div>
+                    </div>
+                    <div class="attempt-score">
+                        <div class="score-big" style="color: ${color};">${attempt.score}/${attempt.outOf}</div>
+                        <div class="score-label">${acc.toFixed(0)}% Accuracy</div>
+                    </div>
+                </div>
+                `;
+            });
+            document.getElementById('attemptsHistory').innerHTML = html;
+        }
+    </script>
+</body>
+</html>
