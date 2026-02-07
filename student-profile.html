@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Profile - PrepSense AI</title>
+    <style>
+        :root {
+            --primary-dark: #122C4F;
+            --background-cream: #FBF9E3;
+            --accent-yellow: #F0D637;
+            --accent-blue: #5B88B2;
+            --white: #FFFFFF;
+            --light-gray: #F5F3ED;
+            --shadow-sm: 0 2px 8px rgba(18, 44, 79, 0.08);
+            --shadow-md: 0 4px 16px rgba(18, 44, 79, 0.12);
+            --shadow-lg: 0 8px 24px rgba(18, 44, 79, 0.15);
+            --border-radius: 16px;
+            --transition: all 0.3s ease;
+        }
+
+        /* PAGE TRANSITION ANIMATION */
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .page-transition-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--background-cream);
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .page-transition-overlay.fade-out {
+            animation: fadeOut 0.6s ease-out forwards;
+        }
+
+        .page-transition-overlay.fade-in {
+            animation: fadeIn 0.4s ease-in forwards;
+            pointer-events: auto;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-cream);
+            color: var(--primary-dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(180deg, var(--primary-dark) 0%, #0f1f37 100%);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-lg);
+            overflow-y: auto;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
+            color: var(--accent-yellow);
+            font-weight: 700;
+            font-size: 16px;
+            padding: 12px 0;
+        }
+
+        .sidebar-brand-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--accent-yellow);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-dark);
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            flex: 1;
+        }
+
+        .nav-item {
+            margin-bottom: 15px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 13px 16px;
+            color: #a8b8cc;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: var(--transition);
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(240, 214, 55, 0.1);
+            color: var(--accent-yellow);
+        }
+
+        .nav-link.active {
+            background-color: var(--accent-yellow);
+            color: var(--primary-dark);
+            font-weight: 700;
+        }
+
+        .logout-btn {
+            padding: 12px 16px;
+            background-color: rgba(255, 107, 107, 0.1);
+            color: #ff6b6b;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+        }
+
+        .logout-btn:hover {
+            background-color: rgba(255, 107, 107, 0.2);
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            background-color: var(--background-cream);
+        }
+
+        .header {
+            background-color: var(--white);
+            padding: 30px;
+            box-shadow: var(--shadow-sm);
+            border-bottom: 1px solid rgba(18, 44, 79, 0.05);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: var(--primary-dark);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            color: #7a8290;
+        }
+
+        .content {
+            padding: 30px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .profile-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* PROFILE CARD */
+        .profile-card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 40px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 24px;
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid rgba(18, 44, 79, 0.1);
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-yellow) 0%, #f5c61a 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin: 0 auto 16px;
+            box-shadow: 0 4px 16px rgba(240, 214, 55, 0.3);
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 8px;
+        }
+
+        .profile-email {
+            font-size: 13px;
+            color: #7a8290;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* PROFILE INFO */
+        .profile-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-box {
+            background: var(--light-gray);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: var(--transition);
+        }
+
+        .info-box:hover {
+            border-color: var(--accent-yellow);
+            background: rgba(240, 214, 55, 0.08);
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #7a8290;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .info-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary-dark);
+        }
+
+        .info-unit {
+            font-size: 12px;
+            color: #7a8290;
+            margin-top: 4px;
+        }
+
+        /* STATS SECTION */
+        .stats-section {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 28px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 24px;
+        }
+
+        .stats-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(18, 44, 79, 0.05);
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #7a8290;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        /* DANGER ZONE */
+        .danger-zone {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.08) 0%, rgba(255, 107, 107, 0.05) 100%);
+            border: 2px solid rgba(255, 107, 107, 0.2);
+            border-radius: var(--border-radius);
+            padding: 28px;
+            margin-bottom: 24px;
+        }
+
+        .danger-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ff6b6b;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .danger-description {
+            font-size: 13px;
+            color: #7a8290;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .danger-btn {
+            width: 100%;
+            padding: 14px;
+            background-color: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .danger-btn:hover {
+            background-color: #ff5252;
+            transform: translateY(-2px);
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(18, 44, 79, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 32px;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 12px 48px rgba(18, 44, 79, 0.2);
+        }
+
+        .modal-icon {
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .modal-body {
+            font-size: 14px;
+            color: #7a8290;
+            margin-bottom: 28px;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-button {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .modal-button-confirm {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .modal-button-confirm:hover {
+            background: #ff5252;
+        }
+
+        .modal-button-cancel {
+            background: rgba(18, 44, 79, 0.1);
+            color: var(--primary-dark);
+        }
+
+        .modal-button-cancel:hover {
+            background: rgba(18, 44, 79, 0.15);
+        }
+
+        .success-message {
+            display: none;
+            background: rgba(76, 175, 80, 0.1);
+            border: 2px solid #4caf50;
+            color: #4caf50;
+            padding: 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .success-message.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .profile-card,
+            .stats-section,
+            .danger-zone {
+                padding: 20px;
+            }
+
+            .profile-info {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* LOGOUT MODAL */
+        .logout-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(18, 44, 79, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logout-modal-overlay.active {
+            display: flex;
+        }
+
+        .logout-modal-content {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 32px;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 12px 48px rgba(18, 44, 79, 0.2);
+            text-align: center;
+        }
+
+        .logout-modal-icon {
+            font-size: 56px;
+            margin-bottom: 16px;
+        }
+
+        .logout-modal-header {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 12px;
+        }
+
+        .logout-modal-body {
+            font-size: 14px;
+            color: #7a8290;
+            margin-bottom: 28px;
+            line-height: 1.6;
+        }
+
+        .logout-modal-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .logout-modal-button {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-modal-button-cancel {
+            background: rgba(18, 44, 79, 0.1);
+            color: var(--primary-dark);
+        }
+
+        .logout-modal-button-cancel:hover {
+            background: rgba(18, 44, 79, 0.15);
+        }
+
+        .logout-modal-button-confirm {
+            background: var(--primary-dark);
+            color: white;
+        }
+
+        .logout-modal-button-confirm:hover {
+            background: #0a1630;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="sidebar-brand-icon">P</div>
+                <span>PrepSense</span>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" onclick="handleNavigation('prepsense-dashboard.html')" class="nav-link">
+                        <span>📊</span>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" onclick="handleNavigation('quiz.html?subject=Physics')" class="nav-link">
+                        <span>📝</span>
+                        <span>Practice Quiz</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" onclick="handleNavigation('weak-topics.html')" class="nav-link">
+                        <span>⚠️</span>
+                        <span>Weak Topics</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" onclick="handleNavigation('study-plan.html')" class="nav-link">
+                        <span>📚</span>
+                        <span>Study Plan & History</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="student-profile.html" class="nav-link active">
+                        <span>👤</span>
+                        <span>Profile</span>
+                    </a>
+                </li>
+            </ul>
+
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- HEADER -->
+            <div class="header">
+                <h1>👤 Student Profile</h1>
+                <p class="header-subtitle">View and manage your learning profile</p>
+            </div>
+
+            <!-- CONTENT -->
+            <div class="content">
+                <div class="profile-container">
+                    <!-- SUCCESS MESSAGE -->
+                    <div class="success-message" id="successMessage">✅ Progress reset successfully. Start fresh!</div>
+
+                    <!-- PROFILE CARD -->
+                    <div class="profile-card">
+                        <div class="profile-header">
+                            <div class="profile-avatar" id="profileAvatar">👨‍🎓</div>
+                            <div class="profile-name" id="profileName">Loading...</div>
+                            <div class="profile-email" id="profileEmail">Student ID</div>
+                        </div>
+
+                        <div class="profile-info">
+                            <div class="info-box">
+                                <div class="info-label">Grade</div>
+                                <div class="info-value" id="profileGrade">—</div>
+                                <div class="info-unit">Class/Year</div>
+                            </div>
+                            <div class="info-box">
+                                <div class="info-label">Quizzes</div>
+                                <div class="info-value" id="profileQuizzes">0</div>
+                                <div class="info-unit">Attempted</div>
+                            </div>
+                            <div class="info-box">
+                                <div class="info-label">Readiness</div>
+                                <div class="info-value" id="profileReadiness">0%</div>
+                                <div class="info-unit">Score</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STATS SECTION -->
+                    <div class="stats-section">
+                        <h3 class="stats-title">📈 Learning Statistics</h3>
+                        <div class="stat-row">
+                            <span class="stat-label">Total Questions Practiced</span>
+                            <span class="stat-value" id="totalQuestions">0</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Overall Accuracy</span>
+                            <span class="stat-value" id="overallAccuracy">0%</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Study Plans Created</span>
+                            <span class="stat-value" id="studyPlansCount">0</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Last Activity</span>
+                            <span class="stat-value" id="lastActivity">—</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Account Created</span>
+                            <span class="stat-value" id="accountCreated">—</span>
+                        </div>
+                    </div>
+
+                    <!-- DANGER ZONE -->
+                    <div class="danger-zone">
+                        <h3 class="danger-title">⚠️ Danger Zone</h3>
+                        <p class="danger-description">
+                            Reset all your progress, quizzes, and study plans. This action cannot be undone. You'll start fresh with a clean learning profile.
+                        </p>
+                        <button class="danger-btn" onclick="openResetModal()">🔄 Reset All Progress</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RESET CONFIRMATION MODAL -->
+    <div class="modal-overlay" id="resetModal">
+        <div class="modal-content">
+            <div class="modal-icon">⚠️</div>
+            <div class="modal-header">Reset All Progress?</div>
+            <div class="modal-body">
+                This will permanently delete all your quiz attempts, study plans, and learning data. This action cannot be undone. Are you sure?
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-button modal-button-cancel" onclick="closeResetModal()">Cancel</button>
+                <button class="modal-button modal-button-confirm" onclick="confirmReset()">Yes, Reset All</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGOUT CONFIRMATION MODAL -->
+    <div class="logout-modal-overlay" id="logoutModal">
+        <div class="logout-modal-content">
+            <div class="logout-modal-icon">👋</div>
+            <div class="logout-modal-header">Do you want to leave?</div>
+            <div class="logout-modal-body">Do you want to leave your learning session?</div>
+            <div class="logout-modal-buttons">
+                <button class="logout-modal-button logout-modal-button-cancel" onclick="closeLogoutModal()">Cancel</button>
+                <button class="logout-modal-button logout-modal-button-confirm" onclick="confirmLogout()">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Access control
+        document.addEventListener('DOMContentLoaded', function() {
+            const storedRole = (localStorage.getItem('role') || '').toLowerCase();
+            let currentUser = null;
+            try { currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null'); } catch(e) { currentUser = null; }
+            const role = storedRole || (currentUser && currentUser.role) || '';
+            if (role !== 'student') {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            loadProfileData();
+        });
+
+        function loadProfileData() {
+            const studentID = localStorage.getItem('studentID') || 'demo-student';
+            let currentUser = null;
+            try { currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null'); } catch(e) { currentUser = null; }
+
+            const progressKey = `progress_${studentID}`;
+            const attemptsKey = `attempts_${studentID}`;
+            const studyPlansKey = `studyPlans_${studentID}`;
+
+            try {
+                const progress = JSON.parse(localStorage.getItem(progressKey) || '{}');
+                const attempts = JSON.parse(localStorage.getItem(attemptsKey) || '[]');
+                const studyPlans = JSON.parse(localStorage.getItem(studyPlansKey) || '[]');
+
+                // Profile info
+                const studentName = currentUser?.fullName || 'Student';
+                const firstLetter = studentName.charAt(0).toUpperCase();
+                
+                document.getElementById('profileName').textContent = studentName;
+                document.getElementById('profileEmail').textContent = `ID: ${studentID}`;
+                document.getElementById('profileAvatar').textContent = firstLetter;
+
+                // Grade (default to "Not Set" if not available)
+                const grade = currentUser?.grade || 'Not Set';
+                document.getElementById('profileGrade').textContent = grade;
+
+                // Quizzes attempted
+                const quizzesAttempted = progress.quizzesAttempted || 0;
+                document.getElementById('profileQuizzes').textContent = quizzesAttempted;
+
+                // Overall accuracy / readiness
+                const totalQuestions = progress.totalQuestions || 0;
+                const correctAnswers = progress.correctAnswers || 0;
+                const accuracy = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+                
+                document.getElementById('profileReadiness').textContent = accuracy + '%';
+                document.getElementById('totalQuestions').textContent = totalQuestions;
+                document.getElementById('overallAccuracy').textContent = accuracy + '%';
+
+                // Study plans
+                document.getElementById('studyPlansCount').textContent = studyPlans.length;
+
+                // Last activity
+                if (attempts.length > 0) {
+                    const lastAttempt = attempts[attempts.length - 1];
+                    const lastDate = new Date(lastAttempt.date);
+                    const today = new Date();
+                    const diffTime = today - lastDate;
+                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    let lastActivityText = '';
+                    if (diffDays === 0) {
+                        const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+                        lastActivityText = diffHours === 0 ? 'Just now' : `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+                    } else if (diffDays === 1) {
+                        lastActivityText = 'Yesterday';
+                    } else {
+                        lastActivityText = `${diffDays} days ago`;
+                    }
+                    document.getElementById('lastActivity').textContent = lastActivityText;
+                } else {
+                    document.getElementById('lastActivity').textContent = 'No attempts yet';
+                }
+
+                // Account created (using studentID creation or placeholder)
+                const createdDate = new Date();
+                document.getElementById('accountCreated').textContent = createdDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+            } catch (e) {
+                console.error('Error loading profile data:', e);
+            }
+        }
+
+        function openResetModal() {
+            document.getElementById('resetModal').classList.add('active');
+        }
+
+        function closeResetModal() {
+            document.getElementById('resetModal').classList.remove('active');
+        }
+
+        function confirmReset() {
+            closeResetModal();
+            const studentID = localStorage.getItem('studentID') || 'demo-student';
+
+            // Delete all student-related data
+            localStorage.removeItem(`progress_${studentID}`);
+            localStorage.removeItem(`attempts_${studentID}`);
+            localStorage.removeItem(`studyPlans_${studentID}`);
+
+            // Show success message
+            const successMsg = document.getElementById('successMessage');
+            successMsg.classList.add('show');
+
+            // Reload profile after 2 seconds
+            setTimeout(() => {
+                loadProfileData();
+                successMsg.classList.remove('show');
+            }, 2000);
+        }
+
+        function logout() {
+            document.getElementById('logoutModal').classList.add('active');
+        }
+
+        function closeLogoutModal() {
+            document.getElementById('logoutModal').classList.remove('active');
+        }
+
+        function confirmLogout() {
+            closeLogoutModal();
+            try { localStorage.removeItem('currentUser'); localStorage.removeItem('role'); localStorage.removeItem('studentID'); localStorage.removeItem('studentName'); } catch(e) {}
+            window.location.href = 'index.html';
+        }
+
+        // PAGE TRANSITION HANDLER
+        document.addEventListener('DOMContentLoaded', function() {
+            const transitionOverlay = document.getElementById('pageTransition');
+            if (transitionOverlay) {
+                transitionOverlay.classList.add('fade-out');
+            }
+        });
+
+        function handleNavigation(href) {
+            event && event.preventDefault();
+            event && event.stopPropagation();
+            const transitionOverlay = document.getElementById('pageTransition');
+            if (transitionOverlay) {
+                transitionOverlay.classList.remove('fade-out');
+                transitionOverlay.classList.add('fade-in');
+                setTimeout(() => { window.location.href = href; }, 400);
+            } else {
+                window.location.href = href;
+            }
+        }
+    </script>
+
+    <!-- PAGE TRANSITION OVERLAY -->
+    <div class="page-transition-overlay" id="pageTransition"></div>
+</body>
+</html>

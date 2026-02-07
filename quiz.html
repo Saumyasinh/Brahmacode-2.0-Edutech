@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+`<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -15,6 +15,35 @@
             --shadow-sm: 0 2px 8px rgba(18, 44, 79, 0.08);
             --shadow-md: 0 4px 16px rgba(18, 44, 79, 0.12);
             --shadow-lg: 0 8px 24px rgba(18, 44, 79, 0.15);
+        }
+
+        /* PAGE TRANSITION ANIMATION */
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .page-transition-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--background-cream);
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .page-transition-overlay.fade-out {
+            animation: fadeOut 0.6s ease-out forwards;
+        }
+
+        .page-transition-overlay.fade-in {
+            animation: fadeIn 0.4s ease-in forwards;
+            pointer-events: auto;
         }
 
         * {
@@ -85,6 +114,28 @@
             border-bottom: 1px solid rgba(18, 44, 79, 0.05);
         }
 
+        .quiz-timer {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            min-width: 140px;
+            text-align: right;
+        }
+
+        .quiz-timer.warning {
+            color: #ff9800;
+        }
+
+        .quiz-timer.critical {
+            color: #ff6b6b;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
         .quiz-header-left {
             display: flex;
             align-items: center;
@@ -108,8 +159,134 @@
             padding: 8px 16px;
             border-radius: 20px;
             font-size: 14px;
-            font-weight: 600;
+            font-weight: 700;
+            min-width: 140px;
+            text-align: center;
+        }
+
+        .quiz-timer.warning {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* PROGRESS BAR */
+        .quiz-progress-section {
+            padding: 20px 30px;
+            background: var(--light-gray);
+            border-bottom: 1px solid rgba(18, 44, 79, 0.05);
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .progress-label {
+            font-size: 12px;
+            font-weight: 700;
             color: var(--primary-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(18, 44, 79, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-yellow) 0%, #F0D637 100%);
+            border-radius: 3px;
+            transition: width 0.4s ease;
+        }
+
+        /* CONFIRMATION MODAL */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 12px;
+        }
+
+        .modal-body {
+            font-size: 14px;
+            color: #7a8290;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn-confirm {
+            background: var(--primary-dark);
+            color: white;
+        }
+
+        .modal-btn-confirm:hover {
+            background: #0a1630;
+        }
+
+        .modal-btn-cancel {
+            background: rgba(18, 44, 79, 0.1);
+            color: var(--primary-dark);
+        }
+
+        .modal-btn-cancel:hover {
+            background: rgba(18, 44, 79, 0.15);
         }
 
         /* QUIZ CONTENT */
@@ -195,6 +372,78 @@
             justify-content: space-between;
         }
 
+        /* MODAL STYLES */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(18, 44, 79, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 12px 48px rgba(18, 44, 79, 0.2);
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 12px;
+        }
+
+        .modal-body {
+            font-size: 14px;
+            color: #7a8290;
+            margin-bottom: 28px;
+            line-height: 1.6;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-button {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-button-confirm {
+            background: var(--primary-dark);
+            color: white;
+        }
+
+        .modal-button-confirm:hover {
+            background: #0a1630;
+        }
+
+        .modal-button-cancel {
+            background: rgba(18, 44, 79, 0.1);
+            color: var(--primary-dark);
+        }
+
+        .modal-button-cancel:hover {
+            background: rgba(18, 44, 79, 0.15);
+        }
+
         .btn {
             padding: 12px 28px;
             border: none;
@@ -233,9 +482,168 @@
         }
 
         /* RESULT MODAL */
+        /* LEARNING REPORT STYLES */
+        .learning-report {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .report-section {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .score-circle-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .score-circle {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: conic-gradient(var(--accent-yellow) 0deg, var(--accent-yellow) var(--score-progress), rgba(18, 44, 79, 0.1) var(--score-progress), rgba(18, 44, 79, 0.1) 360deg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px rgba(240, 214, 55, 0.2);
+        }
+
+        .score-value {
+            font-size: 48px;
+            font-weight: 800;
+            color: var(--primary-dark);
+        }
+
+        .score-label {
+            font-size: 12px;
+            color: #7a8290;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+        }
+
+        .breakdown-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .breakdown-card {
+            text-align: center;
+            padding: 20px 16px;
+            border-radius: 12px;
+            border: 2px solid rgba(18, 44, 79, 0.1);
+        }
+
+        .breakdown-card.correct {
+            background: rgba(76, 175, 80, 0.08);
+            border-color: #4caf50;
+        }
+
+        .breakdown-card.incorrect {
+            background: rgba(255, 107, 107, 0.08);
+            border-color: #ff6b6b;
+        }
+
+        .breakdown-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .breakdown-count {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary-dark);
+        }
+
+        .breakdown-label {
+            font-size: 12px;
+            color: #7a8290;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        .concepts-section h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 16px;
+        }
+
+        .concept-item {
+            background: var(--light-gray);
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--accent-yellow);
+        }
+
+        .concept-item.correct {
+            border-left-color: #4caf50;
+            background: rgba(76, 175, 80, 0.08);
+        }
+
+        .concept-item.incorrect {
+            border-left-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.08);
+        }
+
+        .concept-title {
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 6px;
+        }
+
+        .concept-text {
+            font-size: 13px;
+            color: #7a8290;
+            line-height: 1.6;
+        }
+
+        .ai-advice-card {
+            background: linear-gradient(135deg, rgba(91, 136, 178, 0.1) 0%, rgba(240, 214, 55, 0.1) 100%);
+            border: 2px solid var(--accent-blue);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .ai-advice-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .ai-advice-text {
+            font-size: 14px;
+            color: var(--primary-dark);
+            line-height: 1.8;
+        }
+
+        .ai-advice-text ul {
+            margin: 12px 0 0 20px;
+            padding: 0;
+        }
+
+        .ai-advice-text li {
+            margin-bottom: 8px;
+            color: #7a8290;
+        }
+
+        /* RESULT MODAL */
         .result-card {
             display: none;
-            text-align: center;
+            text-align: left;
         }
 
         .result-card.show {
@@ -334,7 +742,7 @@
                 <span>PrepSense</span>
             </div>
             <div style="flex: 1;"></div>
-            <a href="prepsense-dashboard.html" style="color: #a8b8cc; text-decoration: none; padding: 12px; text-align: center; border-radius: 8px; font-weight: 600; transition: all 0.3s;">← Back to Dashboard</a>
+            <a href="#" onclick="handleNavigation('prepsense-dashboard.html')" style="color: #a8b8cc; text-decoration: none; padding: 12px; text-align: center; border-radius: 8px; font-weight: 600; transition: all 0.3s;">← Back to Dashboard</a>
         </aside>
 
         <!-- MAIN AREA -->
@@ -347,8 +755,18 @@
                         <div class="quiz-subject" id="quizSubject">Motion</div>
                     </div>
                 </div>
-                <div class="quiz-timer" id="quizTimer">⏱ Time: 00:00</div>
+                <div class="quiz-timer" id="quizTimer">⏱ 5:00</div>
             </header>
+
+            <!-- PROGRESS BAR SECTION -->
+            <div class="quiz-progress-section">
+                <div class="progress-info">
+                    <span class="progress-label" id="progressLabel">Question 1/5</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar" style="width: 0%;"></div>
+                </div>
+            </div>
 
             <!-- CONTENT -->
             <div class="quiz-content">
@@ -387,22 +805,73 @@
                         </div>
                     </div>
 
-                    <!-- FINAL RESULTS -->
-                    <div id="finalResultsView" class="result-card">
-                        <div class="result-score" id="finalScore">4/5</div>
-                        <div class="result-label">Quiz Complete</div>
-                        
-                        <div style="margin: 30px 0;">
-                            <p style="font-size: 14px; color: #7a8290; margin-bottom: 10px;">Weak Topic Detected:</p>
-                            <div id="finalWeakTopics" style="margin: 15px 0;"></div>
-                        </div>
+                    <!-- FINAL RESULTS - LEARNING REPORT -->
+                    <div id="finalResultsView" style="padding: 40px 20px;">
+                        <div class="learning-report">
+                            <!-- SCORE CIRCLE -->
+                            <div class="score-circle-container">
+                                <div class="score-circle" id="scoreCircleContainer">
+                                    <div class="score-value" id="reportScore">4</div>
+                                    <div class="score-label">Out of 5</div>
+                                </div>
+                            </div>
 
-                        <div class="quiz-buttons">
-                            <button class="btn btn-secondary" onclick="backToDashboard()">Back to Dashboard</button>
-                            <button class="btn btn-primary" onclick="generateStudyPlan()">Generate Study Plan →</button>
+                            <!-- BREAKDOWN -->
+                            <div class="report-section">
+                                <h3 style="font-size: 16px; font-weight: 700; color: var(--primary-dark); margin-bottom: 20px;">Performance Breakdown</h3>
+                                <div class="breakdown-container">
+                                    <div class="breakdown-card correct">
+                                        <div class="breakdown-icon">✅</div>
+                                        <div class="breakdown-count" id="correctCount">4</div>
+                                        <div class="breakdown-label">Correct</div>
+                                    </div>
+                                    <div class="breakdown-card incorrect">
+                                        <div class="breakdown-icon">❌</div>
+                                        <div class="breakdown-count" id="incorrectCount">1</div>
+                                        <div class="breakdown-label">Incorrect</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- CONCEPTS -->
+                            <div class="report-section concepts-section" id="conceptsSection">
+                                <h3>Key Concepts Covered</h3>
+                                <div id="conceptsList"></div>
+                            </div>
+
+                            <!-- AI ADVICE -->
+                            <div class="report-section ai-advice-card">
+                                <div class="ai-advice-header">
+                                    <span style="font-size: 24px;">🤖</span>
+                                    <div>
+                                        <div style="font-weight: 700; color: var(--primary-dark);">AI Study Advice</div>
+                                        <div style="font-size: 12px; color: #7a8290;">Based on your performance</div>
+                                    </div>
+                                </div>
+                                <div id="aiAdvice" style="margin-top: 16px; padding: 16px; background: rgba(255, 255, 255, 0.5); border-radius: 8px; font-size: 14px; color: var(--primary-dark); line-height: 1.6;"></div>
+                            </div>
+
+                            <!-- ACTION BUTTONS -->
+                            <div class="quiz-buttons" style="margin-top: 28px;">
+                                <button class="btn btn-secondary" onclick="retryQuiz()">🔄 Retry Quiz</button>
+                                <button class="btn btn-primary" onclick="generateStudyPlan()">📚 Study Plan →</button>
+                            </div>
+                            <button class="btn btn-secondary" onclick="handleNavigation('prepsense-dashboard.html')" style="width: 100%; margin-top: 12px;">← Back to Dashboard</button>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUBMIT CONFIRMATION MODAL -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-content">
+            <div class="modal-header">Confirm Your Answer?</div>
+            <div class="modal-body">Once submitted, you won't be able to change your answer. Make sure you've selected the correct option.</div>
+            <div class="modal-buttons">
+                <button class="modal-button modal-button-cancel" onclick="closeConfirmModal()">Go Back</button>
+                <button class="modal-button modal-button-confirm" onclick="confirmSubmit()">Submit Answer</button>
             </div>
         </div>
     </div>
@@ -559,20 +1028,145 @@
         let timerInterval = null;
         let remainingSeconds = 30;
 
+        // UTILITY FUNCTIONS
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function getWeakTopics() {
+            const studentID = localStorage.getItem('studentID') || 'demo-student';
+            const attemptsKey = `attempts_${studentID}`;
+            let attempts = [];
+            try { attempts = JSON.parse(localStorage.getItem(attemptsKey) || '[]'); } catch(e) {}
+            
+            const weakTopics = [];
+            attempts.forEach(attempt => {
+                const accuracy = attempt.accuracy || ((attempt.score / attempt.outOf) * 100);
+                if (accuracy < 75) {
+                    weakTopics.push({ subject: attempt.subject, topic: attempt.topic, accuracy: accuracy });
+                }
+            });
+            return weakTopics;
+        }
+
+        function selectQuizQuestions() {
+            // Allow planTopics to be passed via URL (re-run plan). Format: planTopics=Topic1,Topic2
+            const params = new URLSearchParams(window.location.search);
+            const planTopicsParam = params.get('planTopics');
+
+            const weakTopics = getWeakTopics();
+            let topicsToUse = [];
+
+            if (planTopicsParam && planTopicsParam.length > 0) {
+                topicsToUse = planTopicsParam.split(',').map(t => t.trim()).filter(Boolean);
+            } else {
+                // Check if there are weak topics in current subject
+                const weakInSubject = weakTopics.filter(w => w.subject === currentSubject);
+                if (weakInSubject.length > 0) {
+                    topicsToUse = weakInSubject.slice(0, 2).map(w => w.topic);
+                }
+            }
+
+            // Get available topics
+            const allTopics = Object.keys(quizData[currentSubject] || {});
+            if (topicsToUse.length === 0) {
+                topicsToUse = allTopics;
+            }
+
+            // Set currentTopic to first selected topic for display
+            currentTopic = topicsToUse[0] || allTopics[0] || currentTopic;
+
+            // Collect and shuffle questions
+            let questionsPool = [];
+            topicsToUse.forEach(topicName => {
+                if (quizData[currentSubject] && quizData[currentSubject][topicName]) {
+                    questionsPool = questionsPool.concat(quizData[currentSubject][topicName]);
+                }
+            });
+
+            // If no questions found, fallback to first topic
+            if (questionsPool.length === 0 && allTopics.length > 0) {
+                currentTopic = allTopics[0];
+                questionsPool = quizData[currentSubject][currentTopic] || [];
+            }
+
+            // Shuffle and return first 5
+            return shuffleArray(questionsPool).slice(0, 5);
+        }
+
+        // === Progress Tracking Functions ===
+        function _getProgressKeyQuiz(studentID){ return `progress_${studentID}`; }
+
+        function initializeProgressQuiz(){
+            const studentID = localStorage.getItem('studentID') || 'demo-student';
+            const key = _getProgressKeyQuiz(studentID);
+            try{
+                const existing = JSON.parse(localStorage.getItem(key) || 'null');
+                if(existing) return existing;
+            }catch(e){ }
+            const progress = {
+                quizzesAttempted: 0,
+                totalQuestions: 0,
+                correctAnswers: 0,
+                subjectStats: {
+                    Physics: {attempts:0, correct:0},
+                    Maths: {attempts:0, correct:0},
+                    Chemistry: {attempts:0, correct:0},
+                    Biology: {attempts:0, correct:0}
+                }
+            };
+            try{ localStorage.setItem(key, JSON.stringify(progress)); }catch(e){}
+            return progress;
+        }
+
+        function loadProgressQuiz(){
+            const studentID = localStorage.getItem('studentID') || 'demo-student';
+            const key = _getProgressKeyQuiz(studentID);
+            try{ return JSON.parse(localStorage.getItem(key) || 'null') || null; }catch(e){ return null; }
+        }
+
+        function saveProgressQuiz(progress){
+            const studentID = localStorage.getItem('studentID') || 'demo-student';
+            const key = _getProgressKeyQuiz(studentID);
+            try{ localStorage.setItem(key, JSON.stringify(progress)); }catch(e){}
+        }
+
+        function updateProgressQuiz(subject, correct, total){
+            const studentID = localStorage.getItem('studentID') || 'demo-student';
+            let progress = loadProgressQuiz();
+            if(!progress) progress = initializeProgressQuiz();
+            progress.quizzesAttempted = (progress.quizzesAttempted || 0) + 1;
+            progress.totalQuestions = (progress.totalQuestions || 0) + (total || 0);
+            progress.correctAnswers = (progress.correctAnswers || 0) + (correct || 0);
+            if(!progress.subjectStats) progress.subjectStats = {Physics:{attempts:0,correct:0},Maths:{attempts:0,correct:0},Chemistry:{attempts:0,correct:0},Biology:{attempts:0,correct:0}};
+            if(!progress.subjectStats[subject]) progress.subjectStats[subject] = {attempts:0, correct:0};
+            progress.subjectStats[subject].attempts += (total || 0);
+            progress.subjectStats[subject].correct += (correct || 0);
+            saveProgressQuiz(progress);
+            return progress;
+        }
+
         // INIT
         document.addEventListener('DOMContentLoaded', function() {
             const params = new URLSearchParams(window.location.search);
             currentSubject = params.get('subject') || 'Physics';
             
-            // Load questions for subject
+            // Load and prepare questions
             if(quizData[currentSubject]){
                 const topicKey = Object.keys(quizData[currentSubject])[0];
                 currentTopic = topicKey;
-                currentQuestions = quizData[currentSubject][topicKey];
+                
+                // Get questions with weak topic focus and shuffle
+                currentQuestions = selectQuizQuestions();
             }
 
             document.getElementById('quizTitle').textContent = currentSubject + ' Quiz';
-            document.getElementById('quizSubject').textContent = currentTopic;
+            document.getElementById('quizSubject').textContent = 'Adaptive Quiz (Random Order)';
 
             loadQuestion();
         });
@@ -658,14 +1252,46 @@
             document.getElementById('questionView').style.display = 'none';
             document.getElementById('resultView').classList.remove('show');
             document.getElementById('finalResultsView').classList.add('show');
-            document.getElementById('finalScore').textContent = `${totalScore}/${currentQuestions.length}`;
-
-            // Detect weak topics
-            let weakCount = 0;
-            scores.forEach((s, idx) => { if(s === 0) weakCount++; });
             
-            const weakHTML = weakCount > 0 ? `<span class="weak-topic-tag">⚠️ ${weakCount} weak area(s) detected in ${currentTopic}</span>` : '<span style="color: #28a745; font-weight: 700;">✅ Great job! No major weak areas.</span>';
-            document.getElementById('finalWeakTopics').innerHTML = weakHTML;
+            // Update score display
+            document.getElementById('reportScore').textContent = totalScore;
+            const accuracy = Math.round((totalScore / currentQuestions.length) * 100);
+            
+            // Set score circle progress
+            const scoreProgress = (accuracy / 100) * 360;
+            document.getElementById('scoreCircleContainer').style.setProperty('--score-progress', scoreProgress + 'deg');
+            
+            // Update breakdown
+            const incorrectCount = currentQuestions.length - totalScore;
+            document.getElementById('correctCount').textContent = totalScore;
+            document.getElementById('incorrectCount').textContent = incorrectCount;
+            
+            // Build concepts list
+            let conceptsHTML = '';
+            currentQuestions.forEach((q, idx) => {
+                const isCorrect = scores[idx] === 1;
+                conceptsHTML += `
+                    <div class="concept-item ${isCorrect ? 'correct' : 'incorrect'}">
+                        <div class="concept-title">${isCorrect ? '✅' : '❌'} ${q.question}</div>
+                        <div class="concept-text">${q.explanation}</div>
+                    </div>
+                `;
+            });
+            document.getElementById('conceptsList').innerHTML = conceptsHTML;
+            
+            // Generate AI advice
+            let advice = '';
+            if(accuracy >= 80) {
+                advice = `🎉 Excellent work! You've demonstrated strong understanding of ${currentTopic}. Keep practicing to maintain your performance!`;
+            } else if(accuracy >= 60) {
+                advice = `👍 Good effort! You're on the right track. Focus on the weak areas and try to reach 80% accuracy.`;
+            } else {
+                advice = `📚 Keep practicing! This topic needs more review. Consider going through the study materials again and attempting practice problems.`;
+            }
+            document.getElementById('aiAdvice').textContent = advice;
+
+            // Update progress tracking
+            updateProgressQuiz(currentSubject, totalScore, currentQuestions.length);
 
             // Store attempt
             const attempt = {
@@ -673,47 +1299,81 @@
                 topic: currentTopic,
                 score: totalScore,
                 outOf: currentQuestions.length,
-                date: new Date().toISOString().split('T')[0],
+                date: new Date().toISOString(),
                 accuracy: Math.round((totalScore / currentQuestions.length) * 100)
             };
-            const attemptsKey = `attempts_${localStorage.getItem('studentID') || 'demo'}`;
+            const attemptsKey = `attempts_${localStorage.getItem('studentID') || 'demo-student'}`;
             let attempts = [];
             try{ attempts = JSON.parse(localStorage.getItem(attemptsKey) || '[]'); }catch(e){}
             attempts.push(attempt);
             try{ localStorage.setItem(attemptsKey, JSON.stringify(attempts)); }catch(e){}
         }
 
+        function createAndSaveStudyPlan(subject, weakTopicsArray){
+            const studentID = localStorage.getItem('studentID') || 'demo-student';
+            const key = `studyPlans_${studentID}`;
+            const now = new Date().toISOString();
+            const plan = {
+                id: 'plan_' + Date.now(),
+                date: now,
+                subject: subject,
+                weakTopics: weakTopicsArray,
+                days: [
+                    { day: 1, title: 'Concepts & Theory', topic: weakTopicsArray[0] || 'Overview', duration: 45 },
+                    { day: 2, title: 'Practice Problems', topic: weakTopicsArray[1] || 'Practice', duration: 45 },
+                    { day: 3, title: 'Mock Test & Review', topic: weakTopicsArray[2] || 'Mock Test', duration: 45 }
+                ]
+            };
+            let plans = [];
+            try{ plans = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { plans = []; }
+            plans.push(plan);
+            try{ localStorage.setItem(key, JSON.stringify(plans)); } catch(e) {}
+            return plan;
+        }
+
         function generateStudyPlan(){
-            const plan = `
-3-Day Study Plan for ${currentTopic}
+            // Save a study plan for this student and redirect to the study-plan page
+            const weakTopics = getWeakTopics();
+            const weakInSubject = weakTopics.filter(w => w.subject === currentSubject);
+            const weakTopicsArr = weakInSubject.map(w => w.topic);
+            // persist plan
+            createAndSaveStudyPlan(currentSubject, weakTopicsArr);
 
-Day 1 - Concepts & Theory (45 min)
-• Revisit core concepts in ${currentTopic}
-• Watch explanation videos
-• Take detailed notes
+            const weakTopicsList = weakTopicsArr.join(',');
+            const transitionOverlay = document.getElementById('pageTransition');
+            if (transitionOverlay) {
+                transitionOverlay.classList.remove('fade-out');
+                transitionOverlay.classList.add('fade-in');
+                setTimeout(() => {
+                    window.location.href = `study-plan.html?subject=${currentSubject}&weakTopics=${encodeURIComponent(weakTopicsList)}`;
+                }, 400);
+            } else {
+                window.location.href = `study-plan.html?subject=${currentSubject}&weakTopics=${encodeURIComponent(weakTopicsList)}`;
+            }
+        }
 
-Day 2 - Practice Problems (45 min)
-• Solve 10 practice questions
-• Review mistakes from this quiz
-• Work on weak areas
-
-Day 3 - Mock Test (45 min)
-• Take a full mock quiz
-• Review all mistakes
-• Focus on difficult topics
-            `;
-            alert('📚 Study Plan Generated:\n' + plan);
-            backToDashboard();
+        function retryQuiz(){
+            // Reload quiz with same subject
+            const transitionOverlay = document.getElementById('pageTransition');
+            if (transitionOverlay) {
+                transitionOverlay.classList.remove('fade-out');
+                transitionOverlay.classList.add('fade-in');
+                setTimeout(() => {
+                    window.location.href = `quiz.html?subject=${currentSubject}`;
+                }, 400);
+            } else {
+                window.location.href = `quiz.html?subject=${currentSubject}`;
+            }
         }
 
         function goBack(){
             if(confirm('Are you sure? Your progress will be lost.')){
-                window.location.href = 'prepsense-dashboard.html';
+                handleNavigation('prepsense-dashboard.html');
             }
         }
 
         function backToDashboard(){
-            window.location.href = 'prepsense-dashboard.html';
+            handleNavigation('prepsense-dashboard.html');
         }
 
         function updateTimerDisplay(){
@@ -742,5 +1402,37 @@ Day 3 - Mock Test (45 min)
             }, 1000);
         }
     </script>
-</body>
+    <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div><div class="loading-text">Preparing your learning space…</div></div>
+    <script>
+        function showLoader() { const el = document.getElementById('loadingOverlay'); if(el) el.classList.add('active'); }
+        function hideLoader() { const el = document.getElementById('loadingOverlay'); if(el) el.classList.remove('active'); }
+        window.addEventListener('load', hideLoader);
+        document.querySelector('.quiz-sidebar a')?.addEventListener('click', showLoader);
+    </script>
+
+    <!-- PAGE TRANSITION OVERLAY -->
+    <div class="page-transition-overlay" id="pageTransition"></div>
+
+    <script>
+        // PAGE TRANSITION HANDLER
+        document.addEventListener('DOMContentLoaded', function() {
+            const transitionOverlay = document.getElementById('pageTransition');
+            if (transitionOverlay) {
+                transitionOverlay.classList.add('fade-out');
+            }
+        });
+
+        function handleNavigation(href) {
+            event && event.preventDefault();
+            event && event.stopPropagation();
+            const transitionOverlay = document.getElementById('pageTransition');
+            if (transitionOverlay) {
+                transitionOverlay.classList.remove('fade-out');
+                transitionOverlay.classList.add('fade-in');
+                setTimeout(() => { window.location.href = href; }, 400);
+            } else {
+                window.location.href = href;
+            }
+        }
+    </script>
 </html>
