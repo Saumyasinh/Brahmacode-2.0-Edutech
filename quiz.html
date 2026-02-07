@@ -855,5 +855,12 @@
             }, 1000);
         }
     </script>
+    <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div><div class="loading-text">Preparing your learning space…</div></div>
+    <script>
+        function showLoader() { const el = document.getElementById('loadingOverlay'); if(el) el.classList.add('active'); }
+        function hideLoader() { const el = document.getElementById('loadingOverlay'); if(el) el.classList.remove('active'); }
+        window.addEventListener('load', hideLoader);
+        document.querySelector('.quiz-sidebar a')?.addEventListener('click', showLoader);
+    </script>
 </body>
 </html>

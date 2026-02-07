@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Parent Login - PrepSense AI</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(18, 44, 79, 0.8); z-index: 9999; align-items: center; justify-content: center; }
+        .loading-overlay.active { display: flex; }
+        .spinner { width: 50px; height: 50px; border: 4px solid rgba(255, 255, 255, 0.3); border-top: 4px solid #F0D637; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { position: absolute; bottom: 40px; color: white; font-size: 14px; font-weight: 600; }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -92,6 +99,12 @@
                 showError('Invalid Student ID or password. Check if this student account exists.');
             }
         }
+    </script>
+    <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div><div class="loading-text">Preparing your learning space…</div></div>
+    <script>
+        function showLoader() { const el = document.getElementById('loadingOverlay'); if(el) el.classList.add('active'); }
+        function hideLoader() { const el = document.getElementById('loadingOverlay'); if(el) el.classList.remove('active'); }
+        window.addEventListener('load', hideLoader);
     </script>
 </body>
 </html>
