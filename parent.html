@@ -78,19 +78,28 @@
 
             // Validate against student accounts
             const studentAccounts = JSON.parse(localStorage.getItem('studentAccounts') || '[]');
-            const account = studentAccounts.find(acc => acc.studentId === studentId && acc.password === password);
+            const account = studentAccounts.find(acc => acc.studentId === studentId);
 
-            if (account) {
-                // Store current user session as parent viewing student
-                localStorage.setItem('currentUser', JSON.stringify({ 
-                    role: 'parent', 
-                    studentId: studentId, 
-                    studentName: account.fullName 
-                }));
-                window.location.href = 'prepsense-dashboard.html';
-            } else {
-                showError('Invalid Student ID or password. Check if this student account exists.');
+            if (!account) {
+                showError('Student account not found. Please check the Student ID.');
+                return;
             }
+
+            // If account exists, check password
+            if (account.password !== password) {
+                showError('Incorrect password for this Student ID.');
+                return;
+            }
+
+            // Store current user session as parent viewing this student
+            localStorage.setItem('currentUser', JSON.stringify({ 
+                role: 'parent', 
+                studentId: studentId, 
+                studentName: account.fullName 
+            }));
+            // Also set a concise role key for compatibility with dashboard checks
+            localStorage.setItem('role', 'parent');
+            window.location.href = 'prepsense-dashboard.html';
         }
     </script>
 </body>

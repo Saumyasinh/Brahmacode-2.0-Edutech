@@ -856,7 +856,7 @@
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" onclick="handleNavClick(event)">
+                    <a class="nav-link" href="/progress-report.html" onclick="handleNavClick(event)">
                         <span class="nav-icon">📊</span>
                         <span>Progress Report</span>
                     </a>
@@ -956,20 +956,22 @@
 
                     <!-- RIGHT COLUMN: EXAM READINESS -->
                     <div class="right-column">
-                        <!-- EXAM READINESS CARD -->
-                        <div class="exam-readiness-card">
-                            <div class="circular-progress-container">
-                                <div class="circular-progress">
-                                    <div class="progress-circle"></div>
-                                    <div class="progress-text">
-                                        <div class="progress-percentage" id="readiness-percentage">68%</div>
-                                        <div class="progress-label">Exam Readiness</div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div id="rightContent">
+                          <!-- EXAM READINESS CARD (default content) -->
+                          <div class="exam-readiness-card">
+                              <div class="circular-progress-container">
+                                  <div class="circular-progress">
+                                      <div class="progress-circle"></div>
+                                      <div class="progress-text">
+                                          <div class="progress-percentage" id="readiness-percentage">68%</div>
+                                          <div class="progress-label">Exam Readiness</div>
+                                      </div>
+                                  </div>
+                              </div>
 
-                            <div class="readiness-status">⚠️ Needs Revision</div>
-                            <div class="readiness-helper">Reach 80% to be ready!</div>
+                              <div class="readiness-status">⚠️ Needs Revision</div>
+                              <div class="readiness-helper">Reach 80% to be ready!</div>
+                          </div>
                         </div>
                     </div>
 
@@ -1031,7 +1033,8 @@
             let currentUser = null;
             try{ currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null'); }catch(e){ currentUser = null }
             const role = storedRole || (currentUser && currentUser.role) || '';
-            if(role !== 'student'){
+            // allow both student and parent roles to view the dashboard; otherwise redirect
+            if(!['student','parent'].includes(role)){
                 window.location.href = 'index.html';
                 return;
             }
@@ -1147,6 +1150,13 @@
             event.currentTarget.classList.add('active');
             const txt = event.currentTarget.textContent.trim();
             if(txt === 'Practice Quiz') return goToPractice();
+            if(txt === 'Progress Report'){
+                const right = document.getElementById('rightContent');
+                if(right){
+                    right.innerHTML = '<div class="exam-readiness-card"><iframe title="Progress Report" src="/progress-report.html" style="width:100%;height:520px;border:none;border-radius:12px;"></iframe></div>';
+                }
+                return;
+            }
             alert(txt + ' page not implemented in demo.');
         }
 

@@ -25,19 +25,30 @@ export default function ParentLogin({ onLogin, onBack, onSignup }) {
       return
     }
 
-    // Check credentials against localStorage
-    const parentAccounts = JSON.parse(localStorage.getItem('parentAccounts') || '[]')
-    const parentAccount = parentAccounts.find(
-      acc => acc.studentId === credentials.studentId && acc.password === credentials.password
+    // Check credentials against student accounts (parents login with their child's credentials)
+    const studentAccounts = JSON.parse(localStorage.getItem('studentAccounts') || '[]')
+    const studentAccount = studentAccounts.find(
+      acc => acc.studentId === credentials.studentId
     )
 
-    if (parentAccount) {
-      // Store current parent in localStorage
-      localStorage.setItem('currentParent', JSON.stringify(parentAccount))
-      onLogin()
-    } else {
-      setError('Invalid Student ID or password')
+    if (!studentAccount) {
+      setError('Student account not found. Please check the Student ID.')
+      return
     }
+
+    if (studentAccount.password !== credentials.password) {
+      setError('Incorrect password for this Student ID.')
+      return
+    }
+
+    // Store current user in localStorage as parent viewing this student
+    localStorage.setItem('currentUser', JSON.stringify({
+      role: 'parent',
+      studentId: studentAccount.studentId,
+      studentName: studentAccount.fullName
+    }))
+    localStorage.setItem('role', 'parent')
+    onLogin()
   }
 
   return (
@@ -50,8 +61,6 @@ export default function ParentLogin({ onLogin, onBack, onSignup }) {
       </div>
 
       <form onSubmit={handleSubmit}>
-        {error && <div className="error-message">{error}</div>}
-
         <div className="form-group">
           <label className="form-label">Student ID:</label>
           <input
@@ -59,7 +68,7 @@ export default function ParentLogin({ onLogin, onBack, onSignup }) {
             name="studentId"
             value={credentials.studentId}
             onChange={handleChange}
-            placeholder="Enter student's ID"
+            placeholder="e.g., S001, S002, S003"
             className="form-input"
             required
           />
@@ -72,19 +81,21 @@ export default function ParentLogin({ onLogin, onBack, onSignup }) {
             name="password"
             value={credentials.password}
             onChange={handleChange}
-            placeholder="Enter your password"
+            placeholder="Demo password: password123"
             className="form-input"
             required
           />
         </div>
+
+        {error && <div className="error-message" style={{ color: '#ff6b6b', marginBottom: '12px', fontSize: '14px', fontWeight: '500' }}>{error}</div>}
 
         <button type="submit" className="login-button">
           Login
         </button>
       </form>
 
-      <div className="signup-link">
-        Don't have an account? <a onClick={onSignup} style={{ cursor: 'pointer' }}>Sign up</a>
+      <div className="signup-link" style={{ fontSize: '12px', color: '#666', marginTop: '12px' }}>
+        Demo credentials: S001 / password123
       </div>
     </div>
   )

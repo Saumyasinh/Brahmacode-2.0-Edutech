@@ -555,7 +555,9 @@
         let currentQuestions = [];
         let selectedAnswers = [];
         let scores = [];
-        let startTime = Date.now();
+        // Timer state (per-question countdown)
+        let timerInterval = null;
+        let remainingSeconds = 30;
 
         // INIT
         document.addEventListener('DOMContentLoaded', function() {
@@ -573,7 +575,6 @@
             document.getElementById('quizSubject').textContent = currentTopic;
 
             loadQuestion();
-            startTimer();
         });
 
         function loadQuestion(){
@@ -599,6 +600,11 @@
             document.getElementById('questionView').style.display = 'block';
             document.getElementById('resultView').classList.remove('show');
             document.getElementById('nextBtn').disabled = true;
+
+            // Reset per-question countdown to 30 seconds
+            remainingSeconds = 30;
+            updateTimerDisplay();
+            startTimer();
         }
 
         function selectOption(idx, btn){
@@ -609,6 +615,8 @@
         }
 
         function submitAnswer(){
+            // stop timer for this question
+            if(timerInterval){ clearInterval(timerInterval); timerInterval = null; }
             const q = currentQuestions[currentQuestionIndex];
             const isCorrect = selectedAnswers[currentQuestionIndex] === q.correct;
             scores[currentQuestionIndex] = isCorrect ? 1 : 0;
@@ -645,6 +653,7 @@
         }
 
         function showFinalResults(){
+            if(timerInterval){ clearInterval(timerInterval); timerInterval = null; }
             const totalScore = scores.filter(s => s === 1).length;
             document.getElementById('questionView').style.display = 'none';
             document.getElementById('resultView').classList.remove('show');
@@ -707,12 +716,29 @@ Day 3 - Mock Test (45 min)
             window.location.href = 'prepsense-dashboard.html';
         }
 
+        function updateTimerDisplay(){
+            const mins = Math.floor(remainingSeconds / 60);
+            const secs = remainingSeconds % 60;
+            document.getElementById('quizTimer').textContent = `⏱ Time: ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
         function startTimer(){
-            setInterval(() => {
-                const elapsed = Math.floor((Date.now() - startTime) / 1000);
-                const mins = Math.floor(elapsed / 60);
-                const secs = elapsed % 60;
-                document.getElementById('quizTimer').textContent = `⏱ Time: ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            // clear any existing interval
+            if(timerInterval){ clearInterval(timerInterval); timerInterval = null; }
+
+            timerInterval = setInterval(() => {
+                remainingSeconds -= 1;
+                if(remainingSeconds < 0) remainingSeconds = 0;
+                updateTimerDisplay();
+
+                if(remainingSeconds === 0){
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    // auto-submit current question when time runs out
+                    if(document.getElementById('questionView').style.display !== 'none'){
+                        submitAnswer();
+                    }
+                }
             }, 1000);
         }
     </script>

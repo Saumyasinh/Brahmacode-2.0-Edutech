@@ -53,12 +53,21 @@
     </div>
 
     <script>
-        // Predefined teacher accounts
-        const TEACHER_ACCOUNTS = [
-            { teacherId: 'T001', password: 'password123' },
-            { teacherId: 'T002', password: 'teacher456' },
-            { teacherId: 'T003', password: 'secure789' }
-        ];
+        // Initialize demo teacher accounts on page load
+        function initializeDemoTeachers() {
+            // Check if teacher accounts already in localStorage
+            if (!localStorage.getItem('teacherAccounts')) {
+                const teacherAccounts = [
+                    { teacherId: 'T001', fullName: 'John Doe', password: 'password123' },
+                    { teacherId: 'T002', fullName: 'Emily Smith', password: 'teacher456' },
+                    { teacherId: 'T003', fullName: 'Dr. Michael Brown', password: 'secure789' }
+                ];
+                localStorage.setItem('teacherAccounts', JSON.stringify(teacherAccounts));
+            }
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', initializeDemoTeachers);
 
         function showError(message) {
             const errorMsg = document.getElementById('errorMsg');
@@ -83,16 +92,30 @@
                 return;
             }
 
-            // Validate against predefined teacher accounts
-            const account = TEACHER_ACCOUNTS.find(acc => acc.teacherId === teacherId && acc.password === password);
+            // Validate against teacher accounts in localStorage
+            const teacherAccounts = JSON.parse(localStorage.getItem('teacherAccounts') || '[]');
+            const account = teacherAccounts.find(acc => acc.teacherId === teacherId);
 
-            if (account) {
-                // Store current user session
-                localStorage.setItem('currentUser', JSON.stringify({ role: 'teacher', teacherId: teacherId }));
-                window.location.href = 'prepsense-dashboard.html';
-            } else {
-                showError('Invalid Teacher ID or password');
+            if (!account) {
+                showError('Teacher account not found. Please check the Teacher ID.');
+                return;
             }
+
+            if (account.password !== password) {
+                showError('Incorrect password for this Teacher ID.');
+                return;
+            }
+
+            // Store teacher session with full name
+            localStorage.setItem('currentUser', JSON.stringify({ 
+                role: 'teacher', 
+                teacherId: account.teacherId,
+                teacherName: account.fullName
+            }));
+            localStorage.setItem('role', 'teacher');
+            
+            // Redirect to teacher dashboard
+            window.location.href = 'teacher-dashboard.html';
         }
     </script>
 </body>

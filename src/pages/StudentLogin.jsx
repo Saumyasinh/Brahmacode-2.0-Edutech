@@ -5,6 +5,7 @@ export default function StudentLogin({ onLogin, onBack }) {
     studentId: '',
     password: ''
   })
+  const [error, setError] = useState('')
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -12,20 +13,40 @@ export default function StudentLogin({ onLogin, onBack }) {
       ...prev,
       [name]: value
     }))
+    setError('')
   }
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (credentials.studentId && credentials.password) {
-      // Store student data in localStorage
-      const studentData = {
-        id: credentials.studentId,
-        name: credentials.studentId === 'AP001' ? 'Aryan Patel' : `Student ${credentials.studentId}`,
-        loginTime: new Date().toISOString()
-      }
-      localStorage.setItem('studentData', JSON.stringify(studentData))
-      onLogin()
+    setError('')
+
+    if (!credentials.studentId || !credentials.password) {
+      setError('Please fill in all fields')
+      return
     }
+
+    // Validate against student accounts in localStorage
+    const studentAccounts = JSON.parse(localStorage.getItem('studentAccounts') || '[]')
+    const student = studentAccounts.find(acc => acc.studentId === credentials.studentId)
+
+    if (!student) {
+      setError('Student account not found. Please check the Student ID.')
+      return
+    }
+
+    if (student.password !== credentials.password) {
+      setError('Incorrect password for this Student ID.')
+      return
+    }
+
+    // Store student session
+    localStorage.setItem('currentUser', JSON.stringify({
+      role: 'student',
+      studentId: student.studentId,
+      studentName: student.fullName
+    }))
+    localStorage.setItem('role', 'student')
+    onLogin()
   }
 
   return (
@@ -38,6 +59,8 @@ export default function StudentLogin({ onLogin, onBack }) {
       </div>
 
       <form onSubmit={handleSubmit}>
+        {error && <div className="error-message" style={{ color: '#ff6b6b', marginBottom: '12px', fontSize: '14px', fontWeight: '500' }}>{error}</div>}
+
         <div className="form-group">
           <label className="form-label">Student ID:</label>
           <input
@@ -45,7 +68,7 @@ export default function StudentLogin({ onLogin, onBack }) {
             name="studentId"
             value={credentials.studentId}
             onChange={handleChange}
-            placeholder="e.g., AP001 (Aryan Patel)"
+            placeholder="e.g., S001, S002, S003"
             className="form-input"
             required
           />
@@ -58,7 +81,7 @@ export default function StudentLogin({ onLogin, onBack }) {
             name="password"
             value={credentials.password}
             onChange={handleChange}
-            placeholder="Enter your password"
+            placeholder="Demo password: password123"
             className="form-input"
             required
           />
@@ -69,8 +92,8 @@ export default function StudentLogin({ onLogin, onBack }) {
         </button>
       </form>
 
-      <div className="signup-link">
-        New here? <a href="#signup">Create account</a>
+      <div className="signup-link" style={{ fontSize: '12px', color: '#666', marginTop: '12px' }}>
+        Demo credentials: S001 / password123
       </div>
     </div>
   )

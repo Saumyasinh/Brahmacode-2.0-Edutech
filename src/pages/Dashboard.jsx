@@ -1,20 +1,27 @@
 import React, { useEffect, useState } from 'react'
 import StudentDashboard from './StudentDashboard'
+import TeacherDashboard from './TeacherDashboard'
 
 export default function Dashboard({ role, onLogout }) {
   const [parentName, setParentName] = useState('')
   const [studentName, setStudentName] = useState('Aryan Patel')
+  const [teacherName, setTeacherName] = useState('John Doe')
 
   useEffect(() => {
     if (role === 'parent') {
-      const currentParent = JSON.parse(localStorage.getItem('currentParent') || '{}')
-      if (currentParent.fullName) {
-        setParentName(currentParent.fullName)
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}')
+      if (currentUser.studentName) {
+        setParentName(currentUser.studentName)
       }
     } else if (role === 'student') {
-      const studentData = JSON.parse(localStorage.getItem('studentData') || '{}')
-      if (studentData.name) {
-        setStudentName(studentData.name)
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}')
+      if (currentUser.studentName) {
+        setStudentName(currentUser.studentName)
+      }
+    } else if (role === 'teacher') {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}')
+      if (currentUser.teacherName) {
+        setTeacherName(currentUser.teacherName)
       }
     }
   }, [role])
@@ -29,25 +36,7 @@ export default function Dashboard({ role, onLogout }) {
       case 'student':
         return <StudentDashboard studentName={studentName} onLogout={onLogout} />
       case 'teacher':
-        return (
-          <>
-            <div className="welcome-message">
-              Welcome, Teacher! Here's your dashboard.
-            </div>
-            <div className="dashboard-card">
-              <h2>👥 My Classes</h2>
-              <p>Manage your classes, view student lists, and track class performance metrics.</p>
-            </div>
-            <div className="dashboard-card">
-              <h2>📋 Assignments</h2>
-              <p>Create and manage assignments. Grade student submissions and provide feedback.</p>
-            </div>
-            <div className="dashboard-card">
-              <h2>📈 Analytics</h2>
-              <p>Analyze student performance, identify learning gaps, and get AI insights for teaching optimization.</p>
-            </div>
-          </>
-        )
+        return <TeacherDashboard teacherName={teacherName} onLogout={onLogout} />
       case 'parent':
         return (
           <>

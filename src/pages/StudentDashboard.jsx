@@ -46,6 +46,8 @@ export default function StudentDashboard({ studentName, onLogout }) {
     setActiveNav(navItem)
   }
 
+  // No full-page navigation: we'll show the progress report inside the dashboard
+
   const handleLogoutClick = (e) => {
     e.preventDefault()
     if (window.confirm('Are you sure you want to logout?')) {
@@ -195,33 +197,48 @@ export default function StudentDashboard({ studentName, onLogout }) {
               </div>
             </div>
 
-            {/* RIGHT COLUMN: EXAM READINESS */}
+            {/* RIGHT COLUMN: either exam readiness or embedded Progress Report */}
             <div className="right-column">
-              {/* EXAM READINESS CARD */}
-              <div className="exam-readiness-card">
-                <div className="circular-progress-container">
-                  <div className="circular-progress">
-                    <div
-                      className="progress-circle"
-                      style={{
-                        background: `conic-gradient(
+              {activeNav === 'progress' ? (
+                <div className="exam-readiness-card">
+                  <iframe
+                    title="Progress Report"
+                    src="/progress-report.html"
+                    style={{
+                      width: '100%',
+                      height: '520px',
+                      border: 'none',
+                      borderRadius: '12px'
+                    }}
+                  />
+                </div>
+              ) : (
+                /* EXAM READINESS CARD */
+                <div className="exam-readiness-card">
+                  <div className="circular-progress-container">
+                    <div className="circular-progress">
+                      <div
+                        className="progress-circle"
+                        style={{
+                          background: `conic-gradient(
                           var(--accent-yellow) 0deg,
                           var(--accent-yellow) ${dashboardData.readiness * 3.6}deg,
                           #e5e5e5 ${dashboardData.readiness * 3.6}deg,
                           #e5e5e5 360deg
                         )`
-                      }}
-                    ></div>
-                    <div className="progress-text">
-                      <div className="progress-percentage">{dashboardData.readiness}%</div>
-                      <div className="progress-label">Exam Readiness</div>
+                        }}
+                      ></div>
+                      <div className="progress-text">
+                        <div className="progress-percentage">{dashboardData.readiness}%</div>
+                        <div className="progress-label">Exam Readiness</div>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="readiness-status">⚠️ Needs Revision</div>
-                <div className="readiness-helper">Reach 80% to be ready!</div>
-              </div>
+                  <div className="readiness-status">⚠️ Needs Revision</div>
+                  <div className="readiness-helper">Reach 80% to be ready!</div>
+                </div>
+              )}
             </div>
 
             {/* RECENT ATTEMPTS TABLE (FULL WIDTH) */}

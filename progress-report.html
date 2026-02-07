@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AssessMate AI — Progress Report</title>
+  <style>
+    /* Design tokens (use only provided palette and a small spacing scale) */
+    :root{
+      --color-primary: #122C4F; /* primary dark blue */
+      --bg-cream: #FBF9E3;      /* background cream */
+      --accent-yellow: #F0D637; /* accent yellow */
+      --accent-blue: #5B88B2;   /* accent blue */
+      --soft-red: #E36B6B;      /* soft red for weak */
+
+      --space-1: 8px;
+      --space-2: 12px;
+      --space-3: 16px;
+      --space-4: 24px;
+      --radius: 10px;
+      --card-bg: #ffffff;
+      --max-width: 820px;
+      --shadow: 0 6px 18px rgba(18,44,79,0.06);
+      --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    /* Page layout */
+    html,body{height:100%;}
+    body{
+      margin:0;
+      font-family:var(--font-sans);
+      background:var(--bg-cream);
+      color:var(--color-primary);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      padding:var(--space-4);
+    }
+
+    .wrap{
+      width:100%;
+      max-width:var(--max-width);
+    }
+
+    /* Shared card style (keeps to existing card look) */
+    .card{
+      background:var(--card-bg);
+      border-radius:var(--radius);
+      padding:var(--space-3);
+      box-shadow:var(--shadow);
+      margin-bottom:var(--space-4);
+    }
+
+    /* PERFORMANCE SUMMARY card */
+    .summary{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      text-align:center;
+      padding:var(--space-4);
+    }
+
+    .score-circle{
+      width:140px;
+      height:140px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border:6px solid rgba(91,136,178,0.12);
+      margin-bottom:var(--space-3);
+      background:linear-gradient(180deg, rgba(91,136,178,0.06), rgba(240,214,55,0.02));
+    }
+
+    .score-value{
+      font-size:32px;
+      font-weight:700;
+      color:var(--color-primary);
+    }
+
+    .summary-row{
+      display:flex;
+      gap:var(--space-3);
+      font-size:14px;
+      color:var(--color-primary);
+      opacity:0.9;
+    }
+
+    /* Topic-wise status */
+    .topics-list{display:flex;flex-direction:column;gap:8px;padding-top:6px}
+    .topic-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:10px 6px;
+      border-radius:8px;
+    }
+
+    .pill{
+      padding:6px 10px;
+      border-radius:999px;
+      color:white;
+      font-weight:600;
+      font-size:13px;
+      min-width:76px;
+      text-align:center;
+    }
+
+    .pill.good{background:var(--accent-blue);}
+    .pill.avg{background:var(--accent-yellow); color:var(--color-primary);}
+    .pill.weak{background:var(--soft-red);}
+
+    /* Mistake summary */
+    .mistakes ul{margin:0;padding-left:20px}
+    .mistakes li{margin-bottom:6px}
+
+    /* Action buttons */
+    .actions{
+      display:flex;
+      gap:12px;
+      justify-content:stretch;
+    }
+    .btn{
+      flex:1;
+      padding:12px 14px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:700;
+      border:2px solid transparent;
+      text-align:center;
+      font-size:15px;
+    }
+    .btn.primary{
+      background:var(--accent-blue);
+      color:white;
+      border-color:transparent;
+    }
+    .btn.secondary{
+      background:transparent;
+      color:var(--color-primary);
+      border-color:rgba(18,44,79,0.08);
+    }
+
+    /* Small utilities */
+    h1{font-size:18px;margin:0 0 var(--space-3) 0}
+    h2{font-size:15px;margin:0 0 var(--space-2) 0}
+    .muted{font-size:13px; color:var(--color-primary);opacity:0.85}
+
+    @media (max-width:520px){
+      .score-circle{width:110px;height:110px}
+      .score-value{font-size:24px}
+      .actions{flex-direction:column}
+      .btn{width:100%}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <!-- 1) PERFORMANCE SUMMARY (CARD) -->
+    <section class="card summary" aria-labelledby="perf-title">
+      <h1 id="perf-title">Performance Summary</h1>
+
+      <div class="score-circle" id="scoreCircle">
+        <div>
+          <div class="score-value" id="scoreVal">3 / 5</div>
+        </div>
+      </div>
+
+      <div class="summary-row" aria-live="polite">
+        <div class="muted" id="accuracyText">60% Accuracy</div>
+        <div class="muted" id="timeText">Time Taken: 08:45</div>
+      </div>
+    </section>
+
+    <!-- 2) TOPIC-WISE STATUS (CARD) -->
+    <section class="card" aria-labelledby="topics-title">
+      <h2 id="topics-title">Topic-wise Status</h2>
+      <div class="topics-list" id="topicsList">
+        <!-- JS will populate topic rows -->
+      </div>
+    </section>
+
+    <!-- 3) MISTAKE SUMMARY (CARD) -->
+    <section class="card mistakes" aria-labelledby="mistakes-title">
+      <h2 id="mistakes-title">Mistake Summary</h2>
+      <ul id="mistakeList">
+        <!-- JS will populate mistakes -->
+      </ul>
+    </section>
+
+    <!-- 4) ACTION BUTTONS (BOTTOM) -->
+    <section style="display:flex;gap:12px;align-items:center;">
+      <div style="flex:1"></div>
+      <div style="width:100%;">
+        <div class="actions">
+          <button class="btn primary" id="retryBtn">Retry Weak Topic</button>
+          <button class="btn secondary" id="planBtn">Generate Study Plan</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    /* ---------- Sample data and state (replace with real inputs) ---------- */
+    const reportData = {
+      correctAnswers: 3,
+      totalQuestions: 5,
+      timeTaken: '08:45',
+      topics: [
+        { name: 'Algebra', correct: 4, total: 5 },
+        { name: 'Geometry', correct: 3, total: 5 },
+        { name: 'Trigonometry', correct: 1, total: 5 }
+      ],
+      mistakes: [
+        'Sign error in equation',
+        'Forgot unit conversion',
+        'Formula substitution mistake'
+      ]
+    };
+
+    /* ---------- Utility: compute accuracy ---------- */
+    function computeAccuracy(correct, total){
+      if (!total) return 0;
+      return Math.round((correct / total) * 100);
+    }
+
+    /* ---------- Topic status rule-based function ---------- */
+    function topicStatus(scorePercent){
+      if (scorePercent >= 80) return 'good';
+      if (scorePercent >= 50) return 'avg';
+      if (scorePercent >= 30) return 'weak';
+      return 'poor';
+    }
+
+    /* ---------- Render functions ---------- */
+    function renderSummary(data){
+      const scoreVal = document.getElementById('scoreVal');
+      const accuracyText = document.getElementById('accuracyText');
+      const timeText = document.getElementById('timeText');
+
+      scoreVal.textContent = `${data.correctAnswers} / ${data.totalQuestions}`;
+      const acc = computeAccuracy(data.correctAnswers, data.totalQuestions);
+      accuracyText.textContent = `${acc}% Accuracy`;
+      timeText.textContent = `Time Taken: ${data.timeTaken}`;
+    }
+
+    function renderTopics(data){
+      const list = document.getElementById('topicsList');
+      list.innerHTML = '';
+
+      data.topics.forEach(topic => {
+        const percent = computeAccuracy(topic.correct, topic.total);
+        const status = topicStatus(percent);
+
+        const row = document.createElement('div');
+        row.className = 'topic-row';
+
+        const left = document.createElement('div');
+        left.textContent = topic.name;
+
+        const pill = document.createElement('div');
+        pill.className = `pill ${status}`;
+        pill.textContent = (status === 'good') ? 'Good' : (status === 'avg') ? 'Average' : 'Weak';
+
+        row.appendChild(left);
+        row.appendChild(pill);
+        list.appendChild(row);
+      });
+    }
+
+    function renderMistakes(data){
+      const list = document.getElementById('mistakeList');
+      list.innerHTML = '';
+      data.mistakes.forEach(m => {
+        const li = document.createElement('li');
+        li.textContent = m;
+        list.appendChild(li);
+      });
+    }
+
+    /* ---------- Wire up actions ---------- */
+    function findWeakTopics(data){
+      return data.topics.filter(t => topicStatus(computeAccuracy(t.correct, t.total)) === 'weak');
+    }
+
+    document.getElementById('retryBtn').addEventListener('click', () => {
+      const weak = findWeakTopics(reportData);
+      if (weak.length === 0){
+        alert('No weak topics detected — good work!');
+        return;
+      }
+      // Minimal action: navigate or show simple prompt to retry the first weak topic.
+      alert('Retrying: ' + weak[0].name);
+    });
+
+    document.getElementById('planBtn').addEventListener('click', () => {
+      // Minimal behavior: show a simple confirmation that a short plan was generated.
+      alert('A concise study plan has been generated for your weak topics.');
+    });
+
+    /* ---------- Initial render ---------- */
+    renderSummary(reportData);
+    renderTopics(reportData);
+    renderMistakes(reportData);
+  </script>
+</body>
+</html>

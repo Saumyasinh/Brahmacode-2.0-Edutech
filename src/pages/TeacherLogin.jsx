@@ -6,19 +6,48 @@ export default function TeacherLogin({ onLogin, onBack }) {
     password: ''
   })
 
+  const [error, setError] = useState('')
+
   const handleChange = (e) => {
     const { name, value } = e.target
     setCredentials(prev => ({
       ...prev,
       [name]: value
     }))
+    setError('')
   }
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (credentials.teacherId && credentials.password) {
-      onLogin()
+    setError('')
+
+    if (!credentials.teacherId || !credentials.password) {
+      setError('Please fill in all fields')
+      return
     }
+
+    // Validate against teacher accounts in localStorage
+    const teacherAccounts = JSON.parse(localStorage.getItem('teacherAccounts') || '[]')
+    const teacher = teacherAccounts.find(acc => acc.teacherId === credentials.teacherId)
+
+    if (!teacher) {
+      setError('Teacher account not found. Please check the Teacher ID.')
+      return
+    }
+
+    if (teacher.password !== credentials.password) {
+      setError('Incorrect password for this Teacher ID.')
+      return
+    }
+
+    // Store teacher session
+    localStorage.setItem('currentUser', JSON.stringify({
+      role: 'teacher',
+      teacherId: teacher.teacherId,
+      teacherName: teacher.fullName
+    }))
+    localStorage.setItem('role', 'teacher')
+    onLogin()
   }
 
   return (
@@ -38,7 +67,7 @@ export default function TeacherLogin({ onLogin, onBack }) {
             name="teacherId"
             value={credentials.teacherId}
             onChange={handleChange}
-            placeholder="Enter your Teacher ID"
+            placeholder="e.g., T001, T002, T003"
             className="form-input"
             required
           />
@@ -51,19 +80,21 @@ export default function TeacherLogin({ onLogin, onBack }) {
             name="password"
             value={credentials.password}
             onChange={handleChange}
-            placeholder="Enter your password"
+            placeholder="Demo password: password123"
             className="form-input"
             required
           />
         </div>
+
+        {error && <div className="error-message" style={{ color: '#ff6b6b', marginBottom: '12px', fontSize: '14px', fontWeight: '500' }}>{error}</div>}
 
         <button type="submit" className="login-button">
           Login
         </button>
       </form>
 
-      <div className="signup-link">
-        New here? <a href="#signup">Create account</a>
+      <div className="signup-link" style={{ fontSize: '12px', color: '#666', marginTop: '12px' }}>
+        Demo credentials: T001 / password123
       </div>
     </div>
   )
