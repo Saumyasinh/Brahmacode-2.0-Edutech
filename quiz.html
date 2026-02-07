@@ -732,7 +732,7 @@
                 date: new Date().toISOString().split('T')[0],
                 accuracy: Math.round((totalScore / currentQuestions.length) * 100)
             };
-            const attemptsKey = `attempts_${localStorage.getItem('studentID') || 'demo'}`;
+            const attemptsKey = `attempts_${localStorage.getItem('studentID') || 'demo-student'}`;
             let attempts = [];
             try{ attempts = JSON.parse(localStorage.getItem(attemptsKey) || '[]'); }catch(e){}
             attempts.push(attempt);
