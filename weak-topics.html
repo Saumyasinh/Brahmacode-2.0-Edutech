@@ -400,6 +400,84 @@
                 align-self: flex-start;
             }
         }
+
+        /* LOGOUT MODAL */
+        .logout-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(18, 44, 79, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logout-modal-overlay.active {
+            display: flex;
+        }
+
+        .logout-modal-content {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 32px;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 12px 48px rgba(18, 44, 79, 0.2);
+            text-align: center;
+        }
+
+        .logout-modal-icon {
+            font-size: 56px;
+            margin-bottom: 16px;
+        }
+
+        .logout-modal-header {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 12px;
+        }
+
+        .logout-modal-body {
+            font-size: 14px;
+            color: #7a8290;
+            margin-bottom: 28px;
+            line-height: 1.6;
+        }
+
+        .logout-modal-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .logout-modal-button {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-modal-button-cancel {
+            background: rgba(18, 44, 79, 0.1);
+            color: var(--primary-dark);
+        }
+
+        .logout-modal-button-cancel:hover {
+            background: rgba(18, 44, 79, 0.15);
+        }
+
+        .logout-modal-button-confirm {
+            background: var(--primary-dark);
+            color: white;
+        }
+
+        .logout-modal-button-confirm:hover {
+            background: #0a1630;
+        }
     </style>
 </head>
 <body>
@@ -442,6 +520,19 @@
                 <div class="weak-topics-grid" id="weakTopicsContainer">
                     <!-- Topics will be populated here -->
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGOUT CONFIRMATION MODAL -->
+    <div class="logout-modal-overlay" id="logoutModal">
+        <div class="logout-modal-content">
+            <div class="logout-modal-icon">👋</div>
+            <div class="logout-modal-header">Do you want to leave?</div>
+            <div class="logout-modal-body">Do you want to leave your learning session?</div>
+            <div class="logout-modal-buttons">
+                <button class="logout-modal-button logout-modal-button-cancel" onclick="closeLogoutModal()">Cancel</button>
+                <button class="logout-modal-button logout-modal-button-confirm" onclick="confirmLogout()">Logout</button>
             </div>
         </div>
     </div>
@@ -615,11 +706,17 @@
         }
 
         function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('currentUser');
-                localStorage.removeItem('role');
-                window.location.href = 'index.html';
-            }
+            document.getElementById('logoutModal').classList.add('active');
+        }
+
+        function closeLogoutModal() {
+            document.getElementById('logoutModal').classList.remove('active');
+        }
+
+        function confirmLogout() {
+            closeLogoutModal();
+            try { localStorage.removeItem('currentUser'); localStorage.removeItem('role'); localStorage.removeItem('studentID'); localStorage.removeItem('studentName'); } catch(e) {}
+            window.location.href = 'index.html';
         }
     </script>
 </body>

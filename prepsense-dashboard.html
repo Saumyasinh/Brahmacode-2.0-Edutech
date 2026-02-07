@@ -1577,9 +1577,16 @@
 
         function handleLogout(event, name){
             event && event.preventDefault();
-            // clear session keys
+            document.getElementById('logoutModal').classList.add('active');
+        }
+
+        function closeLogoutModal(){
+            document.getElementById('logoutModal').classList.remove('active');
+        }
+
+        function confirmLogout(){
+            closeLogoutModal();
             try{ localStorage.removeItem('currentUser'); localStorage.removeItem('role'); localStorage.removeItem('studentID'); localStorage.removeItem('studentName'); }catch(e){}
-            // redirect
             window.location.href = 'index.html';
         }
 
@@ -1598,6 +1605,19 @@
             window.location.href = 'quiz.html?subject=' + encodeURIComponent(subject);
         }
     </script>
+    <!-- LOGOUT CONFIRMATION MODAL -->
+    <div class="logout-modal-overlay" id="logoutModal">
+        <div class="logout-modal-content">
+            <div class="logout-modal-icon">👋</div>
+            <div class="logout-modal-header">Do you want to leave?</div>
+            <div class="logout-modal-body">Do you want to leave your learning session?</div>
+            <div class="logout-modal-buttons">
+                <button class="logout-modal-button logout-modal-button-cancel" onclick="closeLogoutModal()">Cancel</button>
+                <button class="logout-modal-button logout-modal-button-confirm" onclick="confirmLogout()">Logout</button>
+            </div>
+        </div>
+    </div>
+
     <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div><div class="loading-text">Preparing your learning space…</div></div>
     <script>
         function showLoader() { const el = document.getElementById('loadingOverlay'); if(el) el.classList.add('active'); }
