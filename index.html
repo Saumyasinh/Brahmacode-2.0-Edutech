@@ -6,6 +6,11 @@
     <title>AssessMate - Role Selection</title>
     <link rel="stylesheet" href="styles.css">
     <style>
+        /* Remove default page padding to ensure no spacing on any side */
+        html, body { margin: 0; padding: 0; }
+        .container { padding: 0; }
+        .role-selection { padding: 0; }
+
         .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(18, 44, 79, 0.8); z-index: 9999; align-items: center; justify-content: center; }
         .loading-overlay.active { display: flex; }
         .spinner { width: 50px; height: 50px; border: 4px solid rgba(255, 255, 255, 0.3); border-top: 4px solid #F0D637; border-radius: 50%; animation: spin 1s linear infinite; }
@@ -15,10 +20,15 @@
 </head>
 <body>
     <div class="container">
-        <div class="role-selection" style="position:relative;padding-top:560px;">
-            <!-- Large centered logo -->
-            <div class="logo-section" style="position:absolute;left:0;top:0;z-index:2;width:100vw;overflow:hidden;">
-                <img src="assets/assessmate-logo.png" alt="AssessMate" style="width:100vw;height:auto;display:block;object-fit:cover;" />
+        <div class="role-selection" style="text-align:center;padding:0;">
+            <!-- Smaller centered logo -->
+            <!-- Centered helper sentence (moved above logo) -->
+            <div style="text-align:center;margin:0 0 2px;">
+                <p style="margin:0;font-size:18px;color:#263b5a;font-weight:600;line-height:1;">Who's using AssessMate today? Select a role to get started.</p>
+            </div>
+
+            <div class="logo-section" style="margin:0;">
+                <img src="assets/assessmate-logo.png" alt="AssessMate" style="width:560px;max-width:95%;height:auto;display:block;margin:0 auto 0;object-fit:contain;" />
             </div>
 
             <!-- Buttons (kept below the logo) -->
