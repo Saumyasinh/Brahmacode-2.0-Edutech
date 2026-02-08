@@ -58,14 +58,14 @@ export default function Dashboard({ role, onLogout }) {
           </>
         )
       default:
-        return <div>Welcome to PrepSense AI</div>
+        return <div>Welcome to AssessMate</div>
     }
   }
 
   return (
     <div className="dashboard-container">
       <header className="dashboard-header">
-        <h1 className="dashboard-title">PrepSense AI - {roleLabels[role]} Dashboard</h1>
+        <h1 className="dashboard-title">AssessMate - {roleLabels[role]} Dashboard</h1>
         <button className="logout-button" onClick={onLogout}>
           Logout
         </button>

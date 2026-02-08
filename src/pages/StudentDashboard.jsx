@@ -61,7 +61,7 @@ export default function StudentDashboard({ studentName, onLogout }) {
       <aside className="student-sidebar">
         <div className="sidebar-brand">
           <div className="sidebar-brand-icon">P</div>
-          <span>PrepSense</span>
+          <span>AssessMate</span>
         </div>
 
         <ul className="nav-menu">

@@ -47,7 +47,7 @@ export default function TeacherDashboard({ teacherName, onLogout }) {
       <aside className="teacher-sidebar">
         <div className="sidebar-brand">
           <div className="sidebar-brand-icon">P</div>
-          <span>PrepSense</span>
+          <span>AssessMate</span>
         </div>
 
         <ul className="nav-menu">
@@ -188,7 +188,7 @@ export default function TeacherDashboard({ teacherName, onLogout }) {
                 Analytics
               </div>
               <div className="chart-container">
-                <div className="chart-placeholder">📈</div>
+                <div className="chart-placeholder"><img src="/assets/assessmate-logo.png" alt="AssessMate" style={{width:36, height:36, objectFit:'contain'}}/></div>
                 <div className="chart-label">Performance Overview</div>
               </div>
               <div className="metrics-grid">

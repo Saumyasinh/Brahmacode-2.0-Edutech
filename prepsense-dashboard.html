@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PrepSense - Student Dashboard</title>
+  <title>AssessMate - Student Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
   <style>
     * {
@@ -500,9 +500,10 @@
   <div class="app-container">
     <!-- SIDEBAR -->
     <div class="sidebar">
-      <div class="logo">
-        <div class="logo-icon">📊</div>
-        <span>PrepSense</span>
+
+      <div class="logo" style="display:flex;align-items:center;gap:10px;">
+        <img src="assets/assessmate-logo.png" alt="AssessMate" class="logo-img" style="height:34px;" />
+        <span>AssessMate</span>
       </div>
 
       <div class="student-info">
@@ -532,7 +533,7 @@
       <!-- TOP BAR -->
       <div class="top-bar">
         <h1 class="page-title" id="pageTitle">Dashboard</h1>
-        <button class="take-quiz-btn" id="takeQuizBtn">+ Take a Quiz</button>
+        <button class="take-quiz-btn" id="takeQuizBtn">Start a Quiz</button>
       </div>
 
       <!-- CONTENT AREA -->
@@ -639,10 +640,11 @@
   </div>
 
   <script>
-    // ==================== MOCK DATA ====================
-    const studentID = 'student-' + Math.random().toString(36).substr(2, 9);
-    const progressKey = `progress_${studentID}`;
-    const attemptsKey = `attempts_${studentID}`;
+    // ==================== USER / DATA KEYS ====================
+    // Use logged-in student ID when available; otherwise use demo account
+    const currentStudentID = localStorage.getItem('studentID') || 'demo-student';
+    const progressKey = `progress_${currentStudentID}`;
+    const attemptsKey = `attempts_${currentStudentID}`;
 
     let charts = {
       subjectAccuracy: null,
@@ -674,6 +676,8 @@
 
     // ==================== DATA SEEDING ====================
     function seedMockData() {
+      // Only seed demo data for the demo-student account
+      if (currentStudentID !== 'demo-student') return;
       if (localStorage.getItem('prepsense_seeded')) return;
 
       const subjects = ['Math', 'Science', 'English', 'History'];
@@ -694,10 +698,10 @@
       });
 
       const progress = {
-        studentName: 'John Doe',
-        studentRoll: '10A-024',
-        school: 'Central High School',
-        email: 'john.doe@example.com',
+        studentName: 'Demo Student',
+        studentRoll: 'Demo-001',
+        school: 'Demo School',
+        email: 'demo@example.com',
         joinDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
         subjectStats: subjectStats,
         totalTopics: topicsList.length,
@@ -731,9 +735,13 @@
       const attempts = JSON.parse(localStorage.getItem(attemptsKey) || '[]');
       const stats = progress.subjectStats || {};
 
-      // Update student info
-      document.getElementById('studentName').textContent = progress.studentName || 'Student';
-      document.getElementById('studentClass').textContent = progress.studentRoll + ' • ' + progress.school;
+      // Update student info (prefer explicit logged-in name)
+      const storedName = localStorage.getItem('studentName');
+      document.getElementById('studentName').textContent = storedName || progress.studentName || 'Student';
+      const classParts = [];
+      if (progress.studentRoll) classParts.push(progress.studentRoll);
+      if (progress.school) classParts.push(progress.school);
+      document.getElementById('studentClass').textContent = classParts.length ? classParts.join(' • ') : '';
 
       // Calculate overall accuracy
       let totalCorrect = 0, totalAttempts = 0;
@@ -744,7 +752,7 @@
       const overallAcc = totalAttempts ? Math.round((totalCorrect / totalAttempts) * 100) : 0;
 
       document.getElementById('overallAccuracy').textContent = overallAcc + '%';
-      document.getElementById('quizzesTaken').textContent = attempts.length;
+      document.getElementById('quizzesTaken').textContent = attempts.length || 0;
 
       // Top subject
       let topSubject = '—', topScore = 0;
@@ -753,10 +761,10 @@
         if (acc > topScore) { topScore = acc; topSubject = s; }
       });
       document.getElementById('topSubject').textContent = topSubject;
-      document.getElementById('topSubjectScore').textContent = topScore + '% accuracy';
+      document.getElementById('topSubjectScore').textContent = attempts.length ? topScore + '% accuracy' : 'No data yet';
 
-      // Streak (mock)
-      document.getElementById('streakDays').textContent = Math.floor(Math.random() * 30) + 1;
+      // Streak (mock) — show 0 when no attempts
+      document.getElementById('streakDays').textContent = attempts.length ? (Math.floor(Math.random() * 30) + 1) : 0;
 
       // Recent quizzes
       const quizzesHtml = attempts.slice(0, 5).map(a => `
@@ -790,6 +798,15 @@
     function initCharts(progress, attempts) {
       const stats = progress.subjectStats || {};
       const subjects = Object.keys(stats);
+
+      // If no stats and no attempts, clear any existing charts and skip rendering
+      if (subjects.length === 0 && (!attempts || attempts.length === 0)) {
+        if (charts.subjectAccuracy) { charts.subjectAccuracy.destroy(); charts.subjectAccuracy = null; }
+        if (charts.performanceTrend) { charts.performanceTrend.destroy(); charts.performanceTrend = null; }
+        if (charts.topicStrengths) { charts.topicStrengths.destroy(); charts.topicStrengths = null; }
+        if (charts.subjectPerformance) { charts.subjectPerformance.destroy(); charts.subjectPerformance = null; }
+        return;
+      }
 
       // Subject Accuracy Chart
       if (charts.subjectAccuracy) charts.subjectAccuracy.destroy();
@@ -1103,14 +1120,9 @@
     };
 
     document.getElementById('takeQuizBtn').addEventListener('click', function() {
-      const quizzes = [
-        'Quiz 1 - Math',
-        'Quiz 2 - Science',
-        'Quiz 3 - English',
-        'Quiz 4 - History'
-      ];
-      const random = quizzes[Math.floor(Math.random() * quizzes.length)];
-      openQuiz(random);
+      // Navigate to the quiz page; the quiz page shows a subject selector when no subject param is provided
+      showLoader();
+      setTimeout(() => { window.location.href = 'quiz.html'; }, 300);
     });
 
     // ==================== RESET ====================
@@ -1124,7 +1136,8 @@
     });
 
     // ==================== INIT ====================
-    seedMockData();
+    // Only seed demo data if we're running as the demo-student (no logged-in user)
+    if (currentStudentID === 'demo-student') seedMockData();
     renderDashboard();
   </script>
 </body>

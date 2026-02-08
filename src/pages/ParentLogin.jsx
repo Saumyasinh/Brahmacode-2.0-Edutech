@@ -53,10 +53,11 @@ export default function ParentLogin({ onLogin, onBack, onSignup }) {
 
   return (
     <div className="login-container">
-      <div className="login-header">
+      <div className="login-header" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <button className="back-button" onClick={onBack}>
           ←
         </button>
+        <img src="/assets/assessmate-logo.png" alt="AssessMate" style={{ height: 40 }} />
         <h2 className="login-title">PARENT LOGIN</h2>
       </div>
 

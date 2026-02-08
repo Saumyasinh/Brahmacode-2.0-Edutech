@@ -4,8 +4,8 @@ export default function RoleSelection({ onRoleSelect }) {
   return (
     <div className="role-selection-container">
       <div className="logo-section">
-        <div className="logo">🎓</div>
-        <h1 className="logo-text">PrepSense AI</h1>
+        <div className="logo"><img src="/assets/assessmate-logo.png" alt="AssessMate" style={{height:36}}/></div>
+        <h1 className="logo-text">AssessMate</h1>
       </div>
 
       <p className="subtitle">Choose how you want to continue</p>

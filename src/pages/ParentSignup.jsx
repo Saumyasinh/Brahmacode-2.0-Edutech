@@ -118,12 +118,13 @@ export default function ParentSignup({ onSignupSuccess, onBack }) {
 
   return (
     <div className="login-container">
-      <div className="login-header">
-        <button className="back-button" onClick={onBack}>
-          ←
-        </button>
-        <h2 className="login-title">PARENT SIGNUP</h2>
-      </div>
+      <div className="login-header" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button className="back-button" onClick={onBack}>
+            ←
+          </button>
+          <img src="/assets/assessmate-logo.png" alt="AssessMate" style={{ height: 40 }} />
+          <h2 className="login-title">PARENT SIGNUP</h2>
+        </div>
 
       {successMessage && <div className="success-message">{successMessage}</div>}
 

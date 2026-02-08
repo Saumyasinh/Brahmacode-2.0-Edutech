@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz - PrepSense AI</title>
+    <title>Quiz - AssessMate</title>
     <style>
         :root {
             --primary-dark: #122C4F;
@@ -128,12 +128,6 @@
 
         .quiz-timer.critical {
             color: #ff6b6b;
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
         }
 
         .quiz-header-left {
@@ -166,12 +160,24 @@
 
         .quiz-timer.warning {
             background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
-            animation: pulse 1s infinite;
+            animation: timerPulseWarning 0.9s infinite;
         }
 
-        @keyframes pulse {
+        .quiz-timer.critical {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
+            animation: timerPulseCritical 0.6s infinite;
+            box-shadow: 0 8px 26px rgba(255,107,107,0.18);
+        }
+
+        @keyframes timerPulseWarning {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+            50% { transform: scale(1.04); }
+        }
+
+        @keyframes timerPulseCritical {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.06); opacity: 0.85; }
+            100% { transform: scale(1); opacity: 1; }
         }
 
         /* PROGRESS BAR */
@@ -186,6 +192,12 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 12px;
+        }
+
+        .remaining-count {
+            font-size: 12px;
+            color: #7a8290;
+            font-weight: 700;
         }
 
         .progress-label {
@@ -208,7 +220,8 @@
             height: 100%;
             background: linear-gradient(90deg, var(--accent-yellow) 0%, #F0D637 100%);
             border-radius: 3px;
-            transition: width 0.4s ease;
+            transition: width 0.35s cubic-bezier(.2,.9,.2,1), box-shadow 0.18s ease;
+            box-shadow: 0 6px 18px rgba(240,214,55,0.12);
         }
 
         /* CONFIRMATION MODAL */
@@ -308,6 +321,33 @@
             width: 100%;
         }
 
+        /* SUBJECT SELECTOR */
+        .subject-selector {
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .subject-selector.active {
+            display: flex;
+        }
+
+        .select-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .select-row select {
+            flex: 1;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(18,44,79,0.12);
+            font-size: 14px;
+            background: white;
+        }
+
         .question-progress {
             font-size: 12px;
             color: #7a8290;
@@ -338,7 +378,7 @@
             border-radius: 12px;
             background: var(--white);
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
             text-align: left;
             font-size: 14px;
             font-weight: 500;
@@ -346,8 +386,9 @@
         }
 
         .option-btn:hover {
-            background-color: rgba(240, 214, 55, 0.1);
+            background-color: rgba(240, 214, 55, 0.12);
             border-color: var(--accent-yellow);
+            transform: translateY(-2px);
         }
 
         .option-btn.selected {
@@ -737,9 +778,9 @@
     <div class="quiz-container">
         <!-- SIDEBAR -->
         <aside class="quiz-sidebar">
-            <div class="quiz-brand">
-                <div class="quiz-brand-icon">P</div>
-                <span>PrepSense</span>
+            <div class="quiz-brand" style="display:flex;align-items:center;gap:10px;">
+                <img src="assets/assessmate-logo.png" alt="AssessMate" style="height:28px;" />
+                <span>AssessMate</span>
             </div>
             <div style="flex: 1;"></div>
             <a href="#" onclick="handleNavigation('prepsense-dashboard.html')" style="color: #a8b8cc; text-decoration: none; padding: 12px; text-align: center; border-radius: 8px; font-weight: 600; transition: all 0.3s;">← Back to Dashboard</a>
@@ -761,7 +802,8 @@
             <!-- PROGRESS BAR SECTION -->
             <div class="quiz-progress-section">
                 <div class="progress-info">
-                    <span class="progress-label" id="progressLabel">Question 1/5</span>
+                    <span class="progress-label" id="progressLabel">Question 1/10</span>
+                    <span class="remaining-count" id="remainingCount">Remaining: 10</span>
                 </div>
                 <div class="progress-bar-container">
                     <div class="progress-bar" id="progressBar" style="width: 0%;"></div>
@@ -771,8 +813,21 @@
             <!-- CONTENT -->
             <div class="quiz-content">
                 <div class="quiz-card" id="quizCardContainer">
+                    <!-- SUBJECT / TOPIC SELECTOR -->
+                    <div id="subjectSelector" class="subject-selector active">
+                        <div style="font-weight:700; font-size:18px; margin-bottom:6px;">Choose Subject & Topic</div>
+                        <div class="select-row">
+                            <select id="subjectSelect" aria-label="Choose subject"></select>
+                            <select id="topicSelect" aria-label="Choose topic"></select>
+                        </div>
+                        <div style="display:flex; gap:12px; margin-top:8px;">
+                            <button class="btn btn-secondary" onclick="handleNavigation('prepsense-dashboard.html')">← Cancel</button>
+                            <button class="btn btn-primary" id="startQuizBtn" onclick="startSelectedQuiz()">Start Quiz →</button>
+                        </div>
+                    </div>
+
                     <!-- QUESTION VIEW -->
-                    <div id="questionView">
+                    <div id="questionView" style="display:none;">
                         <div class="question-progress" id="questionProgress">Question 1/5</div>
                         <div class="question-text" id="questionText">What is the SI unit of velocity?</div>
                         <div class="options-grid" id="optionsGrid">
@@ -1024,9 +1079,9 @@
         let currentQuestions = [];
         let selectedAnswers = [];
         let scores = [];
-        // Timer state (per-question countdown)
+        // Timer state (overall quiz countdown)
         let timerInterval = null;
-        let remainingSeconds = 30;
+        let remainingSeconds = 300; // 5 minutes
 
         // UTILITY FUNCTIONS
         function shuffleArray(array) {
@@ -1072,7 +1127,7 @@
                 }
             }
 
-            // Get available topics
+            // Get available to111pics
             const allTopics = Object.keys(quizData[currentSubject] || {});
             if (topicsToUse.length === 0) {
                 topicsToUse = allTopics;
@@ -1081,22 +1136,47 @@
             // Set currentTopic to first selected topic for display
             currentTopic = topicsToUse[0] || allTopics[0] || currentTopic;
 
-            // Collect and shuffle questions
-            let questionsPool = [];
+            // Collect, shuffle per-topic, and pick up to 10 questions in a round-robin manner
+            const perTopic = {};
             topicsToUse.forEach(topicName => {
                 if (quizData[currentSubject] && quizData[currentSubject][topicName]) {
-                    questionsPool = questionsPool.concat(quizData[currentSubject][topicName]);
+                    perTopic[topicName] = shuffleArray(quizData[currentSubject][topicName]);
+                } else {
+                    perTopic[topicName] = [];
                 }
             });
 
-            // If no questions found, fallback to first topic
-            if (questionsPool.length === 0 && allTopics.length > 0) {
+            // If no questions found in any topic, fallback to first available topic
+            const totalAvailable = Object.values(perTopic).reduce((sum, arr) => sum + (arr ? arr.length : 0), 0);
+            if (totalAvailable === 0 && allTopics.length > 0) {
                 currentTopic = allTopics[0];
-                questionsPool = quizData[currentSubject][currentTopic] || [];
+                perTopic[currentTopic] = shuffleArray(quizData[currentSubject][currentTopic] || []);
             }
 
-            // Shuffle and return first 5
-            return shuffleArray(questionsPool).slice(0, 5);
+            const result = [];
+            const maxQuestions = 10;
+            // Round-robin: pick one from each topic in order until we reach maxQuestions or exhaust pools
+            while (result.length < maxQuestions) {
+                let added = false;
+                for (let t of topicsToUse) {
+                    if (perTopic[t] && perTopic[t].length > 0) {
+                        result.push(perTopic[t].shift());
+                        added = true;
+                        if (result.length >= maxQuestions) break;
+                    }
+                }
+                if (!added) break; // nothing left to add
+            }
+
+            // If still short, fill from any remaining questions
+            if (result.length < maxQuestions) {
+                let remaining = [];
+                topicsToUse.forEach(t => { if (perTopic[t]) remaining = remaining.concat(perTopic[t]); });
+                remaining = shuffleArray(remaining);
+                result.push(...remaining.slice(0, maxQuestions - result.length));
+            }
+
+            return result.slice(0, Math.min(maxQuestions, result.length));
         }
 
         // === Progress Tracking Functions ===
@@ -1154,22 +1234,96 @@
         // INIT
         document.addEventListener('DOMContentLoaded', function() {
             const params = new URLSearchParams(window.location.search);
-            currentSubject = params.get('subject') || 'Physics';
-            
-            // Load and prepare questions
-            if(quizData[currentSubject]){
+            const subjectParam = params.get('subject');
+
+            // Populate selector options
+            populateSubjectOptions();
+
+            if (subjectParam && quizData[subjectParam]) {
+                currentSubject = subjectParam;
                 const topicKey = Object.keys(quizData[currentSubject])[0];
                 currentTopic = topicKey;
-                
-                // Get questions with weak topic focus and shuffle
+                currentQuestions = selectQuizQuestions();
+                document.getElementById('subjectSelector').classList.remove('active');
+                document.getElementById('questionView').style.display = 'block';
+                document.getElementById('quizTitle').textContent = currentSubject + ' Quiz';
+                document.getElementById('quizSubject').textContent = 'Adaptive Quiz (Random Order)';
+                // start overall quiz timer (5 minutes)
+                remainingSeconds = 300;
+                updateTimerDisplay();
+                startTimer();
+                loadQuestion();
+            } else {
+                // Show selection UI and wait for user to start
+                document.getElementById('subjectSelector').classList.add('active');
+                document.getElementById('questionView').style.display = 'none';
+                document.getElementById('quizTitle').textContent = 'Choose a Quiz';
+                document.getElementById('quizSubject').textContent = 'Select subject to begin';
+            }
+        });
+
+        function populateSubjectOptions(){
+            const subjectSel = document.getElementById('subjectSelect');
+            const topicSel = document.getElementById('topicSelect');
+            subjectSel.innerHTML = '';
+            Object.keys(quizData).forEach((subj, idx) => {
+                const opt = document.createElement('option');
+                opt.value = subj;
+                opt.textContent = subj;
+                subjectSel.appendChild(opt);
+            });
+            subjectSel.addEventListener('change', () => populateTopicOptions());
+            populateTopicOptions();
+        }
+
+        function populateTopicOptions(){
+            const subjectSel = document.getElementById('subjectSelect');
+            const topicSel = document.getElementById('topicSelect');
+            const subj = subjectSel.value || Object.keys(quizData)[0];
+            topicSel.innerHTML = '';
+            const topics = Object.keys(quizData[subj] || {});
+            const allOpt = document.createElement('option');
+            allOpt.value = '';
+            allOpt.textContent = 'All Topics';
+            topicSel.appendChild(allOpt);
+            topics.forEach(t => {
+                const o = document.createElement('option');
+                o.value = t;
+                o.textContent = t;
+                topicSel.appendChild(o);
+            });
+        }
+
+        function startSelectedQuiz(){
+            const subjectSel = document.getElementById('subjectSelect');
+            const topicSel = document.getElementById('topicSelect');
+            const subj = subjectSel.value || Object.keys(quizData)[0];
+            const chosenTopic = topicSel.value || '';
+
+            currentSubject = subj;
+            // If a specific topic is chosen, set a temporary URL param so selectQuizQuestions picks it
+            if (chosenTopic) {
+                // set currentTopic explicitly and build pool from that
+                currentTopic = chosenTopic;
+                currentQuestions = shuffleArray(quizData[currentSubject][currentTopic] || []).slice(0,10);
+            } else {
+                // Use existing weak-topic-aware selection
                 currentQuestions = selectQuizQuestions();
             }
 
+            // Update header and UI
             document.getElementById('quizTitle').textContent = currentSubject + ' Quiz';
-            document.getElementById('quizSubject').textContent = 'Adaptive Quiz (Random Order)';
-
+            document.getElementById('quizSubject').textContent = chosenTopic ? chosenTopic : 'Adaptive Quiz (Random Order)';
+            document.getElementById('subjectSelector').classList.remove('active');
+            document.getElementById('questionView').style.display = 'block';
+            // reset quiz state
+            currentQuestionIndex = 0; selectedAnswers = []; scores = [];
+            // start overall quiz timer (5 minutes)
+            remainingSeconds = 300;
+            updateTimerDisplay();
+            startTimer();
             loadQuestion();
-        });
+        }
 
         function loadQuestion(){
             if(currentQuestionIndex >= currentQuestions.length){
@@ -1183,11 +1337,15 @@
 
             const grid = document.getElementById('optionsGrid');
             grid.innerHTML = '';
-            q.options.forEach((opt, idx) => {
+            // Shuffle option order for this question so choices appear differently each time
+            const optionsWithIndex = q.options.map((opt, idx) => ({ opt, idx }));
+            const shuffledOptions = shuffleArray(optionsWithIndex);
+            shuffledOptions.forEach((o, displayIdx) => {
                 const btn = document.createElement('button');
                 btn.className = 'option-btn';
-                btn.textContent = `${String.fromCharCode(65 + idx)}) ${opt}`;
-                btn.onclick = () => selectOption(idx, btn);
+                btn.textContent = `${String.fromCharCode(65 + displayIdx)}) ${o.opt}`;
+                // store the original option index when user selects
+                btn.onclick = () => selectOption(o.idx, btn);
                 grid.appendChild(btn);
             });
 
@@ -1195,22 +1353,29 @@
             document.getElementById('resultView').classList.remove('show');
             document.getElementById('nextBtn').disabled = true;
 
-            // Reset per-question countdown to 30 seconds
-            remainingSeconds = 30;
-            updateTimerDisplay();
-            startTimer();
+            // Update progress bar and remaining count
+            const total = currentQuestions.length || 1;
+            const pct = Math.round((currentQuestionIndex / total) * 100);
+            const remaining = Math.max(0, total - currentQuestionIndex);
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = pct + '%';
+            // subtle glow when progressing
+            progressBar.style.boxShadow = '0 10px 30px rgba(240,214,55,0.16)';
+            setTimeout(() => { progressBar.style.boxShadow = '0 6px 18px rgba(240,214,55,0.12)'; }, 400);
+            document.getElementById('remainingCount').textContent = `Remaining: ${remaining}`;
+            document.getElementById('progressLabel').textContent = `Question ${currentQuestionIndex + 1}/${total}`;
         }
 
-        function selectOption(idx, btn){
+        function selectOption(originalIdx, btn){
+            // originalIdx is the index in the question's options array (not the shuffled display index)
             document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
             document.getElementById('nextBtn').disabled = false;
-            selectedAnswers[currentQuestionIndex] = idx;
+            selectedAnswers[currentQuestionIndex] = originalIdx;
         }
 
         function submitAnswer(){
-            // stop timer for this question
-            if(timerInterval){ clearInterval(timerInterval); timerInterval = null; }
+            // keep overall quiz timer running
             const q = currentQuestions[currentQuestionIndex];
             const isCorrect = selectedAnswers[currentQuestionIndex] === q.correct;
             scores[currentQuestionIndex] = isCorrect ? 1 : 0;
@@ -1235,6 +1400,12 @@
             if(!isCorrect){
                 document.getElementById('weakTopicContainer').innerHTML = `<div class="weak-topic-tag">⚠️ Weak Area: ${currentTopic}</div>`;
             }
+
+            // update progress bar to reflect answered question
+            const total = currentQuestions.length || 1;
+            const pct = Math.round(((currentQuestionIndex + 1) / total) * 100);
+            document.getElementById('progressBar').style.width = pct + '%';
+            document.getElementById('remainingCount').textContent = `Remaining: ${Math.max(0, total - (currentQuestionIndex + 1))}`;
         }
 
         function nextQuestion(){
@@ -1379,7 +1550,12 @@
         function updateTimerDisplay(){
             const mins = Math.floor(remainingSeconds / 60);
             const secs = remainingSeconds % 60;
-            document.getElementById('quizTimer').textContent = `⏱ Time: ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            const timerEl = document.getElementById('quizTimer');
+            timerEl.textContent = `⏱ Time: ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            // visual warnings: warning when <= 90s, critical when <= 30s
+            timerEl.classList.remove('warning','critical');
+            if(remainingSeconds <= 30) timerEl.classList.add('critical');
+            else if(remainingSeconds <= 90) timerEl.classList.add('warning');
         }
 
         function startTimer(){
@@ -1394,10 +1570,8 @@
                 if(remainingSeconds === 0){
                     clearInterval(timerInterval);
                     timerInterval = null;
-                    // auto-submit current question when time runs out
-                    if(document.getElementById('questionView').style.display !== 'none'){
-                        submitAnswer();
-                    }
+                    // time's up — finish the quiz and show final results
+                    showFinalResults();
                 }
             }, 1000);
         }
