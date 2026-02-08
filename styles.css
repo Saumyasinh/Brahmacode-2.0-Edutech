@@ -50,7 +50,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 40px;
+    gap: 0;
     padding: 40px;
 }
 
@@ -58,7 +58,9 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 15px;
+    gap: 0;
+    margin: 0;
+    padding: 0;
 }
 
 .logo {
@@ -94,6 +96,7 @@ body {
 
 .buttons-group {
     display: flex;
+    flex-direction: column;
     gap: 20px;
     flex-wrap: wrap;
     justify-content: center;
@@ -318,7 +321,7 @@ body {
 
 @media (max-width: 768px) {
     .role-selection {
-        gap: 30px;
+        gap: 0;
         padding: 30px 20px;
     }
 
@@ -368,7 +371,7 @@ body {
     }
 
     .role-selection {
-        gap: 25px;
+        gap: 0;
         padding: 20px 15px;
     }
 

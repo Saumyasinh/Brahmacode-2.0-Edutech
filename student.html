@@ -6,6 +6,7 @@
     <title>Student Login/Signup - AssessMate</title>
     <link rel="stylesheet" href="styles.css">
     <style>
+        html, body { margin: 0; padding: 0; background-image: url('assets/background-pattern.png'); background-size: cover; background-attachment: fixed; }
         .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(18, 44, 79, 0.8); z-index: 9999; align-items: center; justify-content: center; }
         .loading-overlay.active { display: flex; }
         .spinner { width: 50px; height: 50px; border: 4px solid rgba(255, 255, 255, 0.3); border-top: 4px solid #F0D637; border-radius: 50%; animation: spin 1s linear infinite; }
@@ -16,10 +17,12 @@
 <body>
     <div class="container">
         <div class="login-card">
-            <!-- Back Button and Title -->
-            <div class="login-header" style="display:flex;align-items:center;gap:12px;">
-                <a href="index.html" class="back-button" title="Go back">←</a>
-                <img src="assets/assessmate-logo.png" alt="AssessMate" style="height:40px;" />
+            <!-- Back Button -->
+            <a href="index.html" class="back-button" title="Go back" style="align-self: flex-start;">←</a>
+            
+            <!-- Logo and Title -->
+            <div class="login-header" style="display:flex;flex-direction:column;align-items:center;gap:5px;margin-top:-40px;">
+                <img src="assets/assessmate-logo.png" alt="AssessMate" style="height:160px;padding:0;" />
                 <h1 class="login-title" id="pageTitle">STUDENT LOGIN</h1>
             </div>
 
@@ -106,14 +109,6 @@
             <p class="signup-prompt" id="toggleText">
                 If you are new, <a href="javascript:toggleForm()" class="signup-link">Sign up</a>
             </p>
-            <!-- Quick Take Quiz links -->
-            <div style="margin-top:12px; text-align:center; font-size:13px; color:#55616a;">
-                Quick Try: 
-                <a href="quiz.html?subject=Physics" onclick="showLoader()">Physics</a> · 
-                <a href="quiz.html?subject=Maths" onclick="showLoader()">Maths</a> · 
-                <a href="quiz.html?subject=Chemistry" onclick="showLoader()">Chemistry</a> · 
-                <a href="quiz.html?subject=Biology" onclick="showLoader()">Biology</a>
-            </div>
         </div>
     </div>
 

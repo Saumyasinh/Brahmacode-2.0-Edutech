@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="styles.css">
     <style>
         /* Remove default page padding to ensure no spacing on any side */
-        html, body { margin: 0; padding: 0; }
+        html, body { margin: 0; padding: 0; background-image: url('assets/background-pattern.png'); background-size: cover; background-attachment: fixed; }
         .container { padding: 0; }
         .role-selection { padding: 0; }
 
@@ -22,17 +22,17 @@
     <div class="container">
         <div class="role-selection" style="text-align:center;padding:0;">
             <!-- Smaller centered logo -->
-            <!-- Centered helper sentence (moved above logo) -->
-            <div style="text-align:center;margin:0 0 2px;">
-                <p style="margin:0;font-size:18px;color:#263b5a;font-weight:600;line-height:1;">Who's using AssessMate today? Select a role to get started.</p>
+            <div class="logo-section" style="padding:0;margin:0;">
+                <img src="assets/assessmate-logo.png" alt="AssessMate" style="width:560px;max-width:95%;height:auto;display:block;margin:0 auto;padding:0;object-fit:contain;" />
             </div>
 
-            <div class="logo-section" style="margin:0;">
-                <img src="assets/assessmate-logo.png" alt="AssessMate" style="width:560px;max-width:95%;height:auto;display:block;margin:0 auto 0;object-fit:contain;" />
+            <!-- Centered helper sentence (between logo and buttons) -->
+            <div style="text-align:center;margin:0;padding:0;line-height:1;">
+                <p style="margin:0;padding:0;font-size:18px;color:#263b5a;font-weight:600;line-height:1;">Who's using AssessMate today? Select a role to get started.</p>
             </div>
 
-            <!-- Buttons (kept below the logo) -->
-            <div class="buttons-group">
+            <!-- Buttons (kept below the sentence) -->
+            <div class="buttons-group" style="margin-top: 40px;">
                 <a href="student.html" class="role-button">Student</a>
                 <a href="teacher.html" class="role-button">Teacher</a>
                 <a href="parent.html" class="role-button">Parent</a>
