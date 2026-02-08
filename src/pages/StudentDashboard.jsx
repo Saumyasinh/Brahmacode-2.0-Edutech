@@ -223,8 +223,8 @@ export default function StudentDashboard({ studentName, onLogout }) {
                           background: `conic-gradient(
                           var(--accent-yellow) 0deg,
                           var(--accent-yellow) ${dashboardData.readiness * 3.6}deg,
-                          #e5e5e5 ${dashboardData.readiness * 3.6}deg,
-                          #e5e5e5 360deg
+                          rgba(18, 44, 79, 0.1) ${dashboardData.readiness * 3.6}deg,
+                          rgba(18, 44, 79, 0.1) 360deg
                         )`
                         }}
                       ></div>
